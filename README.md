@@ -27,7 +27,7 @@ Optional :
 ```bash
 sudo npm install -g --unsafe-perm homebridge-browsercam
 ```
-3. On your phone/laptop, connect to [https://localhost](https://localhost) : you need to accept the bad certificate warning (you can't have a real certificate on local networks, see [#configuration](#markdown-header-configuration). The S in https is MANDATORY. Screen pass to black when device is avalaible on HomeKit
+3. On your phone/laptop, connect to [https://YOUR_HOMEBRIDGE_IP](https://YOUR_HOMEBRIDGE_IP) : you need to accept the bad certificate warning (you can't have a real certificate on local networks, see [#configuration](#markdown-header-configuration). <span style="color:#B93129;font-weight:bold;text-decoration:underline"> The S in https is MANDATORY.</span> Screen goes black when device is available on HomeKit
 4. On HomeKit app tap on 'Add accessory'
 5. Enjoy ;-)
 

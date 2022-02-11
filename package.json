@@ -1,10 +1,11 @@
 {
   "name": "homebridge-browsercam",
   "version": "1.0.0",
-  "description": "",
+  "description": "A homebridge plugin enabling HomeKit support for camera with any phones, tablets, laptops, computers : everything that have a camera, a network access and a not too old/crappy browser.",
   "main": "./src/homebridge/index.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js --devtool source-map",
+    "build-dev": "webpack --config webpack.config.js --devtool source-map",
+    "build": "webpack --config webpack.config.js",
     "babel": "babel ./src/homebridge/*.* --out-dir dist -D"
   },
   "engines": {
@@ -12,10 +13,17 @@
     "homebridge": ">=1.4.0"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "Chrome",
+    "Browser",
+    "Camera",
+    "homebridge",
+    "plugin",
+    "motion",
+    "homekit"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "@louis49",
+  "license": "MIT",
   "dependencies": {
     "core-js": "^3.21.0",
     "express": "^4.17.2",
@@ -26,7 +34,6 @@
     "rtsp-streaming-server": "^2.0.6",
     "ws": "^8.4.2"
   },
-  "type": "module",
   "devDependencies": {
     "@babel/cli": "^7.17.0",
     "@babel/plugin-transform-runtime": "^7.17.0",
@@ -38,5 +45,20 @@
     "html-webpack-plugin": "^5.5.0",
     "webpack": "^5.68.0",
     "webpack-cli": "^4.9.2"
-  }
+  },
+  "homepage": "https://github.com/louis49/homebridge-browsercam",
+  "bugs": {
+    "url": "https://github.com/louis49/homebridge-browsercam/issues"
+  },
+  "funding": [
+    {
+      "type" : "paypal",
+      "url" : "https://www.paypal.com/donate/?hosted_button_id=B8NGNPFGK69BY"
+    },
+    {
+      "type" : "buymeacoffee",
+      "url" : "https://www.buymeacoffee.com/louis49github"
+    }
+  ],
+  "type": "module"
 }
