@@ -1,0 +1,78 @@
+{
+  "pluginAlias": "HomebridgeBrowserCam",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Homebridge Browsercam",
+  "footerDisplay": "Please, go to https://YOUR_HOMEBRIDGE_IP:BROWSER_PORT",
+  "schema": {
+    "port": {
+      "type": "integer",
+      "default": "443",
+      "description" : "Port where your browser camera need to connect",
+      "required": true
+    },
+    "streaming": {
+      "type": "object",
+      "properties": {
+        "buffer": {
+          "type": "integer",
+          "default": 500,
+          "placeholder": "milliseconds",
+          "description" : "Duration in milliseconds of streaming buffer",
+          "minimum": 500,
+          "maximum": 10000,
+          "required": true
+        }
+      }
+    },
+    "recording": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "default": true,
+          "description" : "Activate recording",
+          "required": true
+        },
+        "buffer": {
+          "type": "integer",
+          "default": 4000,
+          "placeholder": "milliseconds",
+          "description" : "Duration in milliseconds of recording buffer",
+          "minimum": 1000,
+          "maximum": 60000,
+          "required": true
+        }
+      }
+    },
+    "motion_detector": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "default": true,
+          "description" : "Activate motion detector",
+          "required": true
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30000,
+          "placeholder": "milliseconds",
+          "description" : "Duration in milliseconds of timeout after last event (how many times record after last detected motion)",
+          "minimum": 1000,
+          "maximum": 120000,
+          "required": true
+        },
+        "threshold": {
+          "type": "integer",
+          "default": 5,
+          "placeholder": "%",
+          "description" : "Threshold of detection in percent (%)",
+          "minimum": 0,
+          "maximum": 100,
+          "required": true
+        }
+      }
+    }
+  }
+}
