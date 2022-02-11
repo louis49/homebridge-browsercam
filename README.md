@@ -1,6 +1,10 @@
 # homebridge-browsercam
-[![npm-version](https://badgen.net/npm/v/homebridge-browsercam)](https://www.npmjs.com/package/homebridge-browsercam)
-[![npm-total-downloads](https://badgen.net/npm/dt/homebridge-browsercam)](https://www.npmjs.com/package/homebridge-browsercam)
+
+[![npm-version](https://badgen.net/npm/v/homebridge-browsercam?icon=npm)](https://www.npmjs.com/package/homebridge-browsercam)
+[![npm-total-downloads](https://badgen.net/npm/dt/homebridge-browsercam?icon=npm)](https://www.npmjs.com/package/homebridge-browsercam)
+
+[![Donate](https://badgen.net/badge/paypal/donate?icon=https://simpleicons.now.sh/paypal/fff)](https://www.paypal.com/donate/?hosted_button_id=B8NGNPFGK69BY)
+[![Donate](https://badgen.net/badge/buymeacoffee/donate?icon=https://simpleicons.now.sh/buymeacoffee/fff)](https://www.buymeacoffee.com/louis49github)
 
 A [Homebridge](https://homebridge.io) plugin enabling HomeKit support for camera with any phones, tablets, laptops, computers : everything that have a camera, a network access and a not too old/crappy browser
 
@@ -78,3 +82,7 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
 
 ### Mac M1
 For Homebridge instance on Mac M1, you need to install ffmpeg by following : https://github.com/homebridge/ffmpeg-for-homebridge/issues/30#issuecomment-960181989
+
+# License
+
+MIT
