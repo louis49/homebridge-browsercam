@@ -63,20 +63,20 @@ export class Recording{
 
         this.ffmpeg_process = spawn(ffmpeg_for_homebridge??"ffmpeg", this.args, { env: process.env })
 
-        this.ffmpeg_process.stdin.on('error',  (e) => {
-            this.log.error('RECORDING', e)
+        this.ffmpeg_process.stdin.on('error',  (error) => {
+            this.log.error('RECORDING', error)
         })
 
         this.ffmpeg_process.on('error', (error) => {
-            this.log.error(error)
+            this.log.error('RECORDING', error)
         })
 
         this.ffmpeg_process.stderr.on('data', (data) => {
-            this.log.info('RECORDING', data.toString())
+            //this.log.info('RECORDING', data.toString())
         })
 
         this.ffmpeg_process.stdout.on('data', (data) => {
-            this.log.info('RECORDING', data.toString())
+            //this.log.info('RECORDING', data.toString())
         })
 
         this.ffmpeg_process.on('close', () => {

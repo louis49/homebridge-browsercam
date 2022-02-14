@@ -3,13 +3,13 @@ import {Video} from "./video.js";
 
 async function start(){
 
-    let video = new Video(50)
+    let video = new Video(100)
     let identifier = await video.init();
 
     if(identifier){
         let client = new Client(location.hostname,
             parseInt(location.port,10)?parseInt(location.port,10):443,
-            5000,
+            10000,
             identifier);
 
         video.on('settings', (message) => {

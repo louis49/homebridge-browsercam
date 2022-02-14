@@ -7,8 +7,7 @@ export class Webmbufferkeyframe {
         this.current_duration = 0
         this.buffer = new Buffer.from([])
         this.streaming = false
-        this.reduce = true
-        this.debug = true
+        this.debug = false
     }
 
     parseHead(buffer){
@@ -69,47 +68,6 @@ export class Webmbufferkeyframe {
                 //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
                 //cursor += size.value + size.length + 4
                 return cursor
-            }
-            //SEAK Head
-            else if(
-                (buffer[cursor] === 0x11) &&
-                (buffer[cursor+1] === 0x4d) &&
-                (buffer[cursor+2] === 0x9b) &&
-                (buffer[cursor+3] === 0x74)
-            ){
-                let size = this.readSize(buffer, cursor + 4)
-                //console.log("Found Seak Head", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
-            }
-            //void
-            else if(
-                (buffer[cursor] === 0xec)
-            ){
-                let size = this.readSize(buffer, cursor + 1)
-                //console.log("Found Void", cursor, cursor + size.value + size.length + 1)
-                cursor += size.value + size.length + 1
-            }
-            //Tags
-            else if(
-                (buffer[cursor] === 0x12) &&
-                (buffer[cursor+1] === 0x54) &&
-                (buffer[cursor+2] === 0xc3) &&
-                (buffer[cursor+3] === 0x67)
-            ){
-                let size = this.readSize(buffer, cursor + 4)
-                //console.log("Found Tags", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
-            }
-            // Cues
-            else if(
-                (buffer[cursor] === 0x1c) &&
-                (buffer[cursor+1] === 0x53) &&
-                (buffer[cursor+2] === 0xbb) &&
-                (buffer[cursor+3] === 0x6b)
-            ){
-                let size = this.readSize(buffer, cursor + 4)
-                //console.log("Found Cues", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
             }
             else{
                 let k = buffer.slice(cursor, cursor+4).toString('hex')
@@ -228,6 +186,7 @@ export class Webmbufferkeyframe {
         webmbuffer.streaming = false
         webmbuffer.head_buffer = Buffer.from(this.head_buffer)
         webmbuffer.buffer = Buffer.from(this.buffer)
+        webmbuffer.current_duration = this.current_duration
 
         return webmbuffer
     }
@@ -235,107 +194,93 @@ export class Webmbufferkeyframe {
     append(buffer){
 
         this.buffer = Buffer.concat([this.buffer, buffer])
-
         if(this.buffer.length > 1000){
             if(!this.head_buffer){
-
                 let cluster_cursor = this.parseHead(this.buffer)
                 this.head_buffer = this.buffer.slice(0, cluster_cursor)
                 this.buffer = this.buffer.slice(cluster_cursor)
             }
-            if(this.reduce){
+            if(!this.streaming){
                 this.reduceBuffer()
             }
         }
     }
 
     reduceBuffer() {
-        let current_cluster = this.findNextBlock(this.buffer, 0)
+        // START
+        let current_cluster = this.findNextBlock(this.buffer, 0, 0)
         let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
+
+        // END
         let last_block = this.findLastBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
 
-        let current_block_keyframe = null
-
         if(last_block){
-            //console.log("Current duration :", last_block.time_code - current_cluster.time_code)
-
-            while( (last_block.time_code - current_cluster.time_code) > this.duration) {
+            let current_cluster_keyframe = Object.assign({}, current_cluster)
+            let current_block_keyframe = Object.assign({}, current_block)
+            while( (last_block.time_code - current_cluster.time_code) > this.duration ) {
                 let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
 
-                if ((last_block.time_code - block.time_code) > this.duration){
+                if ((last_block.time_code - block.time_code) > this.duration ){
                     if(block.cluster){
                         current_cluster = block
-                        current_block_keyframe = null
                     }
-                    if(block.keyframe && block.track_number === this.video_track){
+                    else if(block.keyframe && block.track_number === this.video_track){
                         current_block_keyframe = block
+                        current_cluster_keyframe = current_cluster
                     }
                     current_block = block
                 }
-                else{
+                else {
                     break
                 }
             }
 
-            if(current_cluster.start_cursor !== 0 && this.streaming === false){
-                //console.log("New duration :", last_block.time_code - current_block.time_code)
-                let cluster_buffer = this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor)
-
-                let block
-                if(current_block_keyframe){
-                    block = current_block_keyframe
-                    //console.log("Duration beetween keyframe and new frame", current_block.time_code - block.time_code, block.time_code - current_cluster.time_code)
-                }
-                else{
-                    block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
-                    //console.log("Duration beetween keyframe and new frame (Next)", current_block.time_code - block.time_code)
-                }
-
-                let concat = [cluster_buffer]
-                let block_buffer = this.buffer.slice(block.start_cursor, block.next_cursor)
-                concat.push(block_buffer)
-
-                while(block.track_number !== this.video_track && !block.keyframe){
-                    block = this.findNextBlock(this.buffer, block.next_cursor, current_cluster.time_code)
-                    block_buffer = this.buffer.slice(block.start_cursor, block.next_cursor)
-                    concat.push(block_buffer)
-                    console.log("Seek next keyframe")
-                }
-
-                /*
-                // Pour certains flux, la video keyframe est envoyée en second
-                let block1 = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
-                let block1_buffer = this.buffer.slice(block1.start_cursor, block1.next_cursor)
-
-                concat.push(block1)
-
-                let block2 = this.findNextBlock(this.buffer, block1.next_cursor, current_cluster.time_code)
-                let block2_buffer = this.buffer.slice(block2.start_cursor, block2.next_cursor)
-*/
-                let remain = this.buffer.slice(current_block.next_cursor)
-                concat.push(remain)
-
-                this.current_duration = (last_block.time_code) - (current_block.time_code)
-                //console.log(cluster_buffer.length + block1_buffer.length + block2_buffer.length + reste.length)
-                this.buffer=Buffer.concat(concat)
+            if(current_cluster_keyframe.start_cursor !== 0){
+                this.buffer=this.buffer.slice(current_cluster_keyframe.start_cursor)
+                //console.log("Nouvelle durée KeyFrame :", last_block.time_code - current_cluster_keyframe.time_code, this.buffer.length)
+                this.current_duration = (last_block.time_code) - (current_cluster_keyframe.time_code)
+            }
+            else{
+                //console.log("Current Duration :", last_block.time_code - current_cluster_keyframe.time_code)
             }
         }
     }
 
     consume(writer){
         this.streaming = true
-        console.log("START STREAMING : this.streaming = true")
+        console.log("START STREAMING")
 
         if(this.debug) {
             this.debug_file = "debug-" + new Date().getTime() + ".webm"
         }
+
         let current_cluster = this.findNextBlock(this.buffer, 0)
-        let next = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
+        let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
 
-        let time_out = current_cluster.time_code - next.time_code
 
-        let head = Buffer.concat([this.head_buffer, this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor)])
-        let first_frame = this.buffer.slice(next.start_cursor, next.next_cursor)
+        let init_cluster = Object.assign({}, current_cluster)
+
+        while( (current_block.time_code - init_cluster.time_code) < this.duration ) {
+            let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
+
+            if(!block){
+                break
+            }
+            if ((block.time_code - init_cluster.time_code) < this.duration ){
+                if(block.cluster){
+                    current_cluster = block
+                }
+                current_block = block
+            }
+            else {
+                break
+            }
+        }
+
+        console.log("Sending", (current_block.time_code - init_cluster.time_code), "Reste:", this.buffer.length - current_block.start_cursor)
+
+        let head = this.head_buffer
+        let first_frame = this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor)
 
         if(this.debug){
             fs.writeFileSync(this.debug_file, head, {flag:'a'})
@@ -344,7 +289,7 @@ export class Webmbufferkeyframe {
 
         writer.write(head)
         writer.write(first_frame)
-        this.tick(writer, next, 0, current_cluster.time_code, time_out)
+        this.tick(writer, current_cluster, 0, current_cluster.time_code, 0)
     }
 
     tick(writer, current, total, cluster_timecode, time_out){
@@ -352,9 +297,8 @@ export class Webmbufferkeyframe {
             let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode)
 
             if(!next){
-                console.log("Fin du flux")
+                console.log("FLUX END : WRITING END STREAMING")
                 this.streaming = false
-                this.reduce = true
                 writer.end(new Buffer.from([]))
                 return
             }
@@ -364,9 +308,8 @@ export class Webmbufferkeyframe {
             }
 
             if(this.streaming === false){
-                console.log("STOP STREAMING")
+                console.log("WRITING END STREAMING")
                 writer.end(this.buffer.slice(next.start_cursor, next.next_cursor))
-                this.reduce = true
                 return;
             }
             else{
@@ -386,6 +329,9 @@ export class Webmbufferkeyframe {
             }
 
             time_out = (next.time_code - current.time_code)
+            if(time_out <= 0){
+                time_out = 10
+            }
             total += time_out
 
             //console.log('Timeout', time_out, next.track_number, next.time_code, total)
@@ -394,6 +340,7 @@ export class Webmbufferkeyframe {
     }
 
     stop(){
+        console.log("STOP STREAMING : this.streaming = false")
         this.streaming = false
     }
 
@@ -423,6 +370,7 @@ export class Webmbufferkeyframe {
 
     findNextBlock(buffer, cursor, time_code_cluster){
         while (cursor < buffer.length - 8){
+
             if(
                 (buffer[cursor] === 0x1f) &&
                 (buffer[cursor+1] === 0x43) &&
@@ -445,42 +393,60 @@ export class Webmbufferkeyframe {
                 let track_number = this.readSize(buffer, cursor+size.length+1)
                 let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1)
                 let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2)
-                if(keyframe >= 0b1){
-                    //console.log("Keyframe")
-                }
+
+                let start_cursor = cursor
                 //console.log("Found Block", cursor, size.value + size.length + 1, time_code_cluster+time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe")
-                //console.log(time_code, keyframe.toString(2), keyframe >= 0b1)
-                //cursor += size.value + size.length + 1
-                return {start_cursor:cursor, next_cursor : cursor + size.value + size.length + 1, time_code : time_code+time_code_cluster, cluster:false, track_number:track_number.value, keyframe:keyframe >= 0b1}
+                cursor += size.value + size.length + 1
+
+
+                return {start_cursor, next_cursor : cursor, time_code : time_code+time_code_cluster, cluster:false, track_number:track_number.value, keyframe:keyframe >= 0b1}
+
             }
-            else if(
-                (buffer[cursor] === 0x1c) &&
-                (buffer[cursor+1] === 0x53) &&
-                (buffer[cursor+2] === 0xbb) &&
-                (buffer[cursor+3] === 0x6b)
+            else{
+                console.log(buffer.slice(cursor, cursor+4).toString('hex'))
+            }
+        }
+    }
+
+    parseBody(buffer, cursor){
+        let cluster_time_code = 0
+        let current_timecode = 0
+        let count = 0
+        while (cursor < buffer.length - 8){
+            if(
+                (buffer[cursor] === 0x1f) &&
+                (buffer[cursor+1] === 0x43) &&
+                (buffer[cursor+2] === 0xb6) &&
+                (buffer[cursor+3] === 0x75)
             ){
                 let size = this.readSize(buffer, cursor + 4)
-                console.log("Found Cues", cursor, size.value + size.length + 4)
-                cursor += size.value + size.length + 4
+                //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
+                cursor += size.length + 4
+                let time_code = this.readClusterTimeCode(buffer, cursor)
+                cluster_time_code = time_code.time_code
+                console.log("Found Cluster",  cursor-size.length - 4, size.value + (cursor - size.length - 4), time_code.time_code)
+                cursor = time_code.next_cursor
             }
             else if(
-                (buffer[cursor] === 0xa0)
+                (buffer[cursor] === 0xa3)
             ){
                 let size = this.readSize(buffer, cursor + 1)
-                console.log("Found BlockGroup", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 1
-            }
-            else if(
-                (buffer[cursor] === 0xbb)
-            ){
-                let size = this.readSize(buffer, cursor + 1)
-                console.log("Found CuePoint", cursor, cursor + size.value + size.length + 4)
+                let track_number = this.readSize(buffer, cursor+size.length+1)
+                let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1)
+                let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2)
+                //if(track_number.value === this.video_track && (keyframe >= 0b1)){//
+                    console.log("Found Block", cursor, cursor + size.value + size.length + 1, time_code + cluster_time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe" , buffer.slice(cursor, cursor+4).toString('hex'))
+                    //console.log("Found Block", time_code +cluster_time_code, (time_code +cluster_time_code)-current_timecode)
+                    current_timecode = time_code + cluster_time_code
+                    count ++
+                //}
                 cursor += size.value + size.length + 1
             }
             else{
                 console.log(buffer.slice(cursor, cursor+4).toString('hex'))
             }
         }
+        return cursor
     }
 
     readClusterTimeCode(buffer, cursor){
@@ -514,49 +480,7 @@ export class Webmbufferkeyframe {
             value *= 2 ** 8;
             value += buffer[start + i];
         }
-
         return { length, value };
     }
-
 }
 
-/*
-let buffer = fs.readFileSync("huawei.webm")
-let parsing = new Webmbufferkeyframe(8000)
-parsing.append(buffer)
-
-let step = 10000000
-for(let i= 0; i< buffer.length - step; i+=step){
-    console.log(i)
-    let buff = buffer.slice(i, i + step)
-    parsing.append(buff)
-}
-
-//let args = "-i pipe: -codec:v libx264 -pix_fmt yuv420p -profile:v baseline -level:v 4.0 -b:v 2000k -force_key_frames expr:eq(t,n_forced*4) -r 30 -fflags +genpts -reset_timestamps 1 -movflags frag_keyframe+empty_moov+default_base_moof -hide_banner -f mp4 -acodec libfdk_aac -profile:a aac_eld -ar 48k -b:a 64k -ac 1 -hide_banner result.mp4 -y"
-let args = "-i pipe: -codec:v libx264 -pix_fmt yuv420p -profile:v baseline -level:v 4.0 -b:v 2000k -x264opts keyint=20:min-keyint=20:scenecut=-1 -r 30 -fflags +genpts -reset_timestamps 1 -movflags frag_keyframe+empty_moov+default_base_moof -acodec libfdk_aac -profile:a aac_low -ar 48k -b:a 64k -ac 1 -f mp4  -hide_banner result.mp4 -y"
-
-let ffmpeg_process = spawn("ffmpeg", args.split(/\s+/), { env: process.env });
-
-ffmpeg_process.stdin.on('error',  (e) => {
-    console.log('RECORDING', e)
-})
-
-ffmpeg_process.on('error', (error) => {
-    console.log(error);
-})
-
-ffmpeg_process.stderr.on('data', (data) => {
-    console.log('RECORDING', data.toString())
-})
-
-ffmpeg_process.stdout.on('data', (data) => {
-    console.log('RECORDING', data.toString())
-})
-
-ffmpeg_process.on('close', () => {
-    console.log("RECORDING : Fmmpeg closed");
-})
-
-parsing.consume(ffmpeg_process.stdin)*/
-//ffmpeg_process.stdin.write(buffer)
-//ffmpeg_process.stdin.end(Buffer.from([]))

@@ -93,14 +93,6 @@ export class Device extends EventEmitter{
     }
 
     data(buffer){
-
-/*
-        this.count ++
-        fs.writeFileSync('huawei.webm', buffer, {flag:'a'})
-        if(this.count === 180){
-            console.log("Stop")
-        }*/
-
         this.framer.copy(buffer)
 
         this.streaming_buffer.append(buffer)
@@ -117,8 +109,6 @@ export class Device extends EventEmitter{
         if(this.config.motion_detector.active) {
             this.motion_detector.copy(buffer)
         }
-
-
     }
 
     stream(sessionID, sessionInfo, request, callback) {

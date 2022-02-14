@@ -57,15 +57,12 @@ export class Streaming{
         let audio_port = sessionInfo.audioPort;
 
         // -analyzeduration 2147483647 -probesize 2147483647
-        let ffmpegArgs = `-v error -i pipe:`
+        let ffmpegArgs = `-i pipe:`
         ffmpegArgs +=   ` -an -sn -dn -codec:v ${vcodec} -pix_fmt yuv420p -color_range mpeg -r ${fps} -f rawvideo ${encoderOptions} -b:v ${videoBitrate}k -profile:v ${profile} -level:v ${level} -payload_type ${v_payload_type}`
         ffmpegArgs +=   ` -ssrc ${v_ssrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${v_srtp} srtp://${address}:${video_port}?rtcpport=${video_port}&pkt_size=${mtu}`
         ffmpegArgs +=   ` -vn -sn -dn -codec:a ${acodec} -application lowdelay -flags +global_header -f null -ar ${sample_rate}k -b:a ${max_bit_rate}k -ac ${channel} -payload_type ${a_payload_type}`
         ffmpegArgs +=   ` -ssrc ${a_ssrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${a_srtp} srtp://${address}:${audio_port}?rtcpport=${audio_port}&pkt_size=188 -hide_banner`
-
-        console.log("STREAMING: " + ffmpeg_for_homebridge??"ffmpeg" + ffmpegArgs)
-
-        console.log("Start FFMPEG")
+        
         this.ffmpeg_stream = spawn(ffmpeg_for_homebridge??"ffmpeg", ffmpegArgs.split(/\s+/), {env: process.env});
 
         this.ffmpeg_stream.stdin.on('error',  (e) => {
@@ -81,7 +78,7 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.stderr.on('data', function (data){
-            console.log(data.toString())
+            //console.log(data.toString())
         }.bind(this));
 
         this.ffmpeg_stream.on('error', (error) => {

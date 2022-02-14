@@ -40,7 +40,7 @@ export class BrowserCam {
         accessory.category = this.api.hap.Categories.CAMERA;
 
         // Torch
-        if(!!device.settings.torch){
+        if(device.settings.torch !== null){
             accessory.addService(this.api.hap.Service.Lightbulb, `Torch`, this.api.hap.uuid.generate('Motion Sensor'), 'torch')
         }
 

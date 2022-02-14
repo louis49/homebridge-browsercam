@@ -27,9 +27,11 @@ Optional :
 ```bash
 sudo npm install -g --unsafe-perm homebridge-browsercam
 ```
-3. On your phone/laptop, connect to [https://YOUR_HOMEBRIDGE_IP](https://YOUR_HOMEBRIDGE_IP) : you need to accept the bad certificate warning (you can't have a real certificate on local networks, see [#configuration](#markdown-header-configuration). <span style="color:#B93129;font-weight:bold;text-decoration:underline"> The S in https is MANDATORY.</span> Screen goes black when device is available on HomeKit
-4. On HomeKit app tap on 'Add accessory'
-5. Enjoy ;-)
+3. On your phone/laptop, connect to [https://YOUR_HOMEBRIDGE_IP](https://YOUR_HOMEBRIDGE_IP) - <span style="color:#B93129;font-weight:bold;text-decoration:underline"> 'S' in httpS is MANDATORY.</span>
+4. Accept the bad certificate warning (you can't have a real certificate on local networks, see [#configuration](#markdown-header-configuration))
+5. Screen goes black when device become available on HomeKit
+6. On HomeKit app tap on 'Add accessory'
+7. Enjoy ;-)
 
 ## Features 
 * Snapshoting
@@ -64,7 +66,7 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
 * Firefox : ? 
   * Not tested
 * IE / Edge : ✗ 
-  * Don't open an issue about this please, PR too. Thank
+  * Don't open an issue about this please, PR too. Thank you so much
 
 ### Standard settings
 
@@ -79,7 +81,7 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
 * Recording
   * active : true
   * buffer : 4000 ms
-
+  
 ### Mac M1
 For Homebridge instance on Mac M1, you need to install ffmpeg by following : https://github.com/homebridge/ffmpeg-for-homebridge/issues/30#issuecomment-960181989
 

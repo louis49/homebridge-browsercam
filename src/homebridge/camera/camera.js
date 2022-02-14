@@ -118,12 +118,8 @@ export class Camera{
     async *handleRecordingStreamRequest(streamId) {
         this.log.info('handleRecordingStreamRequest', streamId)
 
-        const STOP_AFTER_MOTION_STOP = false;
-
         this.handlingStreamingRequest = true;
 
-        let size = `s=${this.configuration.videoCodec.resolution[0]}x${this.configuration.videoCodec.resolution[1]}:r=${this.configuration.videoCodec.resolution[2]}`
-        //console.log(size)
         const input = ["-i", "pipe:"]
 
         let profile = ""
@@ -163,10 +159,10 @@ export class Camera{
             "-profile:v", profile,
             "-level:v", level,
             "-b:v", `${this.configuration.videoCodec.parameters.bitRate}k`,
-            "-vf",
-            `framerate=fps=25,scale=w=${this.configuration.videoCodec.resolution[0]}:h=${this.configuration.videoCodec.resolution[1]}:force_original_aspect_ratio=1,pad=${this.configuration.videoCodec.resolution[0]}:${this.configuration.videoCodec.resolution[1]}:(ow-iw)/2:(oh-ih)/2`,
+            //"-vf",
+            //`framerate=fps=25,scale=w=${this.configuration.videoCodec.resolution[0]}:h=${this.configuration.videoCodec.resolution[1]}:force_original_aspect_ratio=1,pad=${this.configuration.videoCodec.resolution[0]}:${this.configuration.videoCodec.resolution[1]}:(ow-iw)/2:(oh-ih)/2`,
             "-force_key_frames", `expr:eq(t,n_forced*${this.configuration.videoCodec.parameters.iFrameInterval / 1000})`,
-            //"-r", this.configuration.videoCodec.resolution[2].toString(),
+            "-r", this.configuration.videoCodec.resolution[2].toString(),
         ]
         // https://github.com/seydx/homebridge-camera-ui/blob/eb00a33155f2d5c107cd21d53ba645f309bc5aca/src/services/recording.service.js#L168
         // https://github.com/homebridge/HAP-NodeJS/blob/00d8a11b92f3812302c7b23303139f82fd7f9b97/src/accessories/Camera_accessory.ts#L350
@@ -228,7 +224,7 @@ export class Camera{
 
                     //&& !this.device.motiondetected
 
-                    const isLast = STOP_AFTER_MOTION_STOP && !this.device.recording_buffer.streaming;
+                    const isLast = !this.device.recording_buffer.streaming;
 
                     if(isLast){
                         console.log("isLast")
@@ -260,11 +256,11 @@ export class Camera{
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#closeRecordingStream
     closeRecordingStream(streamId, reason){
         this.log.info('closeRecordingStream', streamId, this.api.hap.HDSProtocolSpecificErrorReason[reason])
+        this.device.stop_record()
         if (this.server) {
             this.server.destroy();
             this.server = undefined;
         }
         this.handlingStreamingRequest = false;
-        this.device.stop_record()
     }
 }

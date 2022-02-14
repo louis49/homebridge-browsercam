@@ -1,8 +1,8 @@
 import EventEmitter from "events"
 
 const resolutions = [
-    //{width: 640, height : 360},
-    {width: 4160, height : 3120}, // Huawei
+    {width: 640, height : 360},
+    {width: 4160, height : 3120}, // 4/3 Huawei
     {width: 4032, height : 3024}, // 4/3 iPhone Max
     {width: 4032, height : 2268}, // 16/9 iPhone Max
     {width: 3840, height : 2180},
@@ -42,8 +42,7 @@ export class Video extends EventEmitter {
                     ideal: 10000 // iPhone : 2268
                 },
                 frameRate: {
-                    ideal: 30,
-                    max: 30
+                    ideal: 25
                 },
                 aspectRatio: {
                     exact : 16/9
@@ -83,10 +82,9 @@ export class Video extends EventEmitter {
                     height:settings.height,
                     width:settings.width,
                     frameRate:settings.frameRate,
-                    torch:(capabilities.torch === undefined)?null:capabilities.torch
+                    torch:(capabilities.torch === undefined)?null:settings.torch
                 }}
-
-            this.mediaRecorder = new MediaRecorder(this.stream)
+            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType : 'video/webm'})
             this.mediaRecorder.ondataavailable = this.send_data.bind(this)
             return settings.deviceId
         }
@@ -97,7 +95,6 @@ export class Video extends EventEmitter {
     }
 
     send_data(event){
-        console.log(this.mediaRecorder.mimeType)
         if(event.data && event.data.size > 0){
             //console.log('Emit data', event.data.size)
             this.emit('data', event.data)
