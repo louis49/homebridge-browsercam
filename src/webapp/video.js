@@ -1,4 +1,4 @@
-import EventEmitter from "events"
+import EventEmitter from "events";
 
 const resolutions = [
     {width: 640, height : 360},
@@ -10,26 +10,26 @@ const resolutions = [
     {width: 1280, height : 720},
     {width: 640, height : 360},
     {width: 320, height : 180},
-]
+];
 
 export class Video extends EventEmitter {
 
     constructor(time_slice) {
-        super()
-        this.time_slice = time_slice
+        super();
+        this.time_slice = time_slice;
     }
 
     async init() {
-        console.log("VIDEO INIT")
+        console.log("VIDEO INIT");
 
         if(!MediaRecorder.isTypeSupported('video/webm')){
-            console.error("Unsuppported Browser (for now)")
-            document.body.style.backgroundColor = "#B93129"
+            console.error("Unsuppported Browser (for now)");
+            document.body.style.backgroundColor = "#B93129";
 
-            let message = document.getElementById("message")
-            message.innerHTML = "<p>Unsuppported Browser (for now)</p>"
-            message.style["color"] = "#FFFFFF"
-            return null
+            let message = document.getElementById("message");
+            message.innerHTML = "<p>Unsuppported Browser (for now)</p>";
+            message.style["color"] = "#FFFFFF";
+            return null;
         }
 
         let constraints = {
@@ -49,29 +49,29 @@ export class Video extends EventEmitter {
                 }
             },
             audio: true
-        }
+        };
 
         for(let res of resolutions){
-            console.log('Trying ', res)
-            constraints.video.height.ideal = res.height
-            constraints.video.width.ideal = res.width
-            let current_stream
+            console.log('Trying ', res);
+            constraints.video.height.ideal = res.height;
+            constraints.video.width.ideal = res.width;
+            let current_stream;
             try{
-                current_stream = await navigator.mediaDevices.getUserMedia(constraints)
+                current_stream = await navigator.mediaDevices.getUserMedia(constraints);
             }
             catch (_){}
 
             if(current_stream){
-                this.stream = current_stream
-                break
+                this.stream = current_stream;
+                break;
             }
         }
 
         if(this.stream){
-            let settings = this.stream.getVideoTracks()[0].getSettings()
-            let devices = await navigator.mediaDevices.enumerateDevices()
-            let device = devices.find((device) => device.deviceId===settings.deviceId && device.kind === 'videoinput')
-            let capabilities = this.stream.getVideoTracks()[0].getCapabilities()
+            let settings = this.stream.getVideoTracks()[0].getSettings();
+            let devices = await navigator.mediaDevices.enumerateDevices();
+            let device = devices.find((device) => device.deviceId===settings.deviceId && device.kind === 'videoinput');
+            let capabilities = this.stream.getVideoTracks()[0].getCapabilities();
 
             this.settings = {
                 settings: {
@@ -83,51 +83,51 @@ export class Video extends EventEmitter {
                     width:settings.width,
                     frameRate:settings.frameRate,
                     torch:(capabilities.torch === undefined)?null:settings.torch
-                }}
-            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType : 'video/webm'})
-            this.mediaRecorder.ondataavailable = this.send_data.bind(this)
-            return settings.deviceId
+                }};
+            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType : 'video/webm'});
+            this.mediaRecorder.ondataavailable = this.send_data.bind(this);
+            return settings.deviceId;
         }
         else
         {
-            return null
+            return null;
         }
     }
 
     send_data(event){
         if(event.data && event.data.size > 0){
             //console.log('Emit data', event.data.size)
-            this.emit('data', event.data)
+            this.emit('data', event.data);
         }
     }
 
     start(){
-        console.log("VIDEO START")
-        document.body.style.backgroundColor = "#000000"
-        let message = document.getElementById("message")
-        message.innerHTML = "<p>Recording</p>"
-        message.style["color"] = "#FFFFFF"
+        console.log("VIDEO START");
+        document.body.style.backgroundColor = "#000000";
+        let message = document.getElementById("message");
+        message.innerHTML = "<p>Recording</p>";
+        message.style["color"] = "#FFFFFF";
 
-        this.emit('settings', this.settings)
-        this.mediaRecorder.start(this.time_slice)
+        this.emit('settings', this.settings);
+        this.mediaRecorder.start(this.time_slice);
     }
 
     stop(){
-        console.log("VIDEO STOP")
+        console.log("VIDEO STOP");
 
-        document.body.style.backgroundColor = "#FFFFFF"
-        let message = document.getElementById("message")
-        message.innerHTML = "<p>Waiting for Server</p>"
-        message.style["color"] = "#000000"
+        document.body.style.backgroundColor = "#FFFFFF";
+        let message = document.getElementById("message");
+        message.innerHTML = "<p>Waiting for Server</p>";
+        message.style["color"] = "#000000";
 
         if(this.mediaRecorder.state !== "inactive"){
-            this.mediaRecorder.stop()
+            this.mediaRecorder.stop();
         }
     }
 
     async torch(value){
         try{
-            await this.stream.getVideoTracks()[0].applyConstraints({advanced: [{torch: value}]})
+            await this.stream.getVideoTracks()[0].applyConstraints({advanced: [{torch: value}]});
         }
         catch (_) {}
     }

@@ -3,7 +3,7 @@ import {Device} from "./device/device.js";
 export const PLATFORM_NAME = 'HomebridgeBrowserCam';
 export const PLUGIN_NAME = 'homebridge-browsercam';
 
-const config_path = "browsercam"
+const config_path = "browsercam";
 import {AdminServer} from "./server/server.js";
 import {Rtsp} from "./server/rtsp.js";
 import path from "path";
@@ -15,8 +15,8 @@ export class BrowserCam {
         this.config = config;
         this.api = api;
 
-        this.devices = {}
-        this.reloaded = {}
+        this.devices = {};
+        this.reloaded = {};
 
         this.api.on("didFinishLaunching" , async () => {
             this.log.info("didFinishLaunching");
@@ -25,32 +25,32 @@ export class BrowserCam {
             await rtsp.start();
 
             let server = new AdminServer(this.log,  path.join(this.api.user.storagePath(), config_path), this.config.port);
-            server.on('open', this.open.bind(this))
-            server.on('close', this.close.bind(this))
+            server.on('open', this.open.bind(this));
+            server.on('close', this.close.bind(this));
 
-            await server.start()
+            await server.start();
         });
     }
 
     addAccessory(device){
-        this.log.info('Adding Accessory', device.uuid)
-        let displayName = device.settings.name //`${device.settings.name} | ${device.settings.vendor} | ${device.settings.platform}`
+        this.log.info('Adding Accessory', device.uuid);
+        let displayName = device.settings.name; //`${device.settings.name} | ${device.settings.vendor} | ${device.settings.platform}`
         let accessory = new this.api.platformAccessory(displayName, device.uuid, this.api.hap.Categories.CAMERA);
-        accessory.context.device = device
+        accessory.context.device = device;
         accessory.category = this.api.hap.Categories.CAMERA;
 
         // Torch
         if(device.settings.torch !== null){
-            accessory.addService(this.api.hap.Service.Lightbulb, `Torch`, this.api.hap.uuid.generate('Motion Sensor'), 'torch')
+            accessory.addService(this.api.hap.Service.Lightbulb, `Torch`, this.api.hap.uuid.generate('Motion Sensor'), 'torch');
         }
 
         if(this.config.motion_detector.active) {
-            accessory.addService(this.api.hap.Service.MotionSensor, 'Motion sensor', this.api.hap.uuid.generate('Motion Sensor'), 'motion')
+            accessory.addService(this.api.hap.Service.MotionSensor, 'Motion sensor', this.api.hap.uuid.generate('Motion Sensor'), 'motion');
         }
         //accessory.addService(this.api.hap.Service.OccupancySensor, 'Noise sensor', this.api.hap.uuid.generate('Noise Sensor'), 'noise')
         //accessory.addService(this.api.hap.Service, 'Adjust', this.api.hap.uuid.generate('Adjust') , 'adjust')
 
-        this.configureAccessory(accessory)
+        this.configureAccessory(accessory);
 
         //this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.api.publishExternalAccessories(PLUGIN_NAME, [accessory]);
@@ -58,7 +58,7 @@ export class BrowserCam {
     }
 
     configureAccessory(accessory){
-        this.log.info('Configuring Accessory', accessory.context.device.uuid)
+        this.log.info('Configuring Accessory', accessory.context.device.uuid);
         accessory
             .getService(this.api.hap.Service.AccessoryInformation)
             .setCharacteristic(this.api.hap.Characteristic.Manufacturer, 'Homebridge')
@@ -71,7 +71,7 @@ export class BrowserCam {
             this.torchService.getCharacteristic(this.api.hap.Characteristic.On)
                 .onSet((on) => {
                     this.log.info('Torch set', on?'on':'off');
-                    accessory.context.device.torch(on)
+                    accessory.context.device.torch(on);
                 });
 
             this.torchService.getCharacteristic(this.api.hap.Characteristic.On)
@@ -100,10 +100,10 @@ export class BrowserCam {
         // MOTION SENSOR
         if(this.config.motion_detector.active){
             this.motion_sensor = accessory.getService('Motion sensor');
-            accessory.context.device.motion_detected = false
+            accessory.context.device.motion_detected = false;
             this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).on("get", (callback => {
                 //this.log.info('MotionDetected get', accessory.context.device.motion_detected);
-                callback(null, accessory.context.device.motion_detected)
+                callback(null, accessory.context.device.motion_detected);
             }));
 
             accessory.context.device.on('motion', async() => {
@@ -111,21 +111,21 @@ export class BrowserCam {
                 if(accessory.context.device.recording_buffer.current_duration >= this.config.recording.buffer){
                     if(accessory.context.motion_timeout){
                         //this.log.info('MOTION SENSOR', 'ClearTimeout')
-                        clearTimeout(accessory.context.motion_timeout)
+                        clearTimeout(accessory.context.motion_timeout);
                     }
                     else{
-                        this.log.info('MOTION SENSOR', 'updateValue(true)')
-                        accessory.context.device.motion_detected = true
-                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true)
+                        this.log.info('MOTION SENSOR', 'updateValue(true)');
+                        accessory.context.device.motion_detected = true;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
                     }
                     accessory.context.motion_timeout = setTimeout(() => {
-                        this.log.info('MOTION SENSOR', 'updateValue(false)')
-                        accessory.context.device.motion_detected = true
-                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false)
-                        accessory.context.motion_timeout = null
-                    }, this.config.motion_detector.timeout)
+                        this.log.info('MOTION SENSOR', 'updateValue(false)');
+                        accessory.context.device.motion_detected = true;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
+                        accessory.context.motion_timeout = null;
+                    }, this.config.motion_detector.timeout);
                 }
-            })
+            });
         }
 
 
@@ -240,10 +240,10 @@ export class BrowserCam {
         };
 
         if(!this.config.recording.active){
-            options.recording = {}
+            options.recording = {};
         }
         if(!this.config.motion_detector.active){
-            options.sensors.motion = false
+            options.sensors.motion = false;
         }
 
         this.controller = new this.api.hap.CameraController(options);
@@ -252,29 +252,29 @@ export class BrowserCam {
     }
 
     open(id, ws){
-        this.log.info('Open', id)
+        this.log.info('Open', id);
 
         if(!this.reloaded[id]){
-            ws.send(JSON.stringify({reload : {value:true}, id}))
-            this.reloaded[id] = true
-            return
+            ws.send(JSON.stringify({reload : {value:true}, id}));
+            this.reloaded[id] = true;
+            return;
         }
 
         if(!this.devices[id]){
-            this.log.info('Creating new Device')
-            let device = new Device(this.api, this.log, this.config, id)
-            device.configure(ws)
-            this.devices[id] = device
-            device.on('ready', this.addAccessory.bind(this))
+            this.log.info('Creating new Device');
+            let device = new Device(this.api, this.log, this.config, id);
+            device.configure(ws);
+            this.devices[id] = device;
+            device.on('ready', this.addAccessory.bind(this));
         }
         else {
-            this.log.info('Get current Device')
-            this.devices[id].configure(ws)
+            this.log.info('Get current Device');
+            this.devices[id].configure(ws);
         }
     }
 
     close(id){
-        this.log.info('Close', id)
-        this.devices[id]?.close()
+        this.log.info('Close', id);
+        this.devices[id]?.close();
     }
 }

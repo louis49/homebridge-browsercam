@@ -1,6 +1,4 @@
-import pickPort from 'pick-port'
-
-import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
+import pickPort from 'pick-port';
 
 import {Snapshot} from "./snapshot.js";
 import {Recording} from "../device/recording.js";
@@ -8,27 +6,27 @@ import {Recording} from "../device/recording.js";
 export class Camera{
 
     constructor(api, log, device) {
-        this.api = api
-        this.log = log
-        this.device = device
+        this.api = api;
+        this.log = log;
+        this.device = device;
     }
 
     /* CameraStreamingDelegate */
     async handleSnapshotRequest(request, callback){
-        let snapshot = new Snapshot(this.log, this.device.settings.height, this.device.settings.width, request.height, request.width)
+        let snapshot = new Snapshot(this.log, this.device.settings.height, this.device.settings.width, request.height, request.width);
         let snap;
         try{
-            snap = await snapshot.snap(this.device.frame)
+            snap = await snapshot.snap(this.device.frame);
             //this.log.info('Sending Snap', snap.length)
         }
         catch (e){
-            this.log.error(e)
+            this.log.error(e);
         }
         callback(null, snap);
     }
 
     async prepareStream(request, callback){
-        this.log.info("prepareStream")
+        this.log.info("prepareStream");
 
         const ipv6 = request.addressVersion === 'ipv6';
 
@@ -77,13 +75,13 @@ export class Camera{
     }
 
     handleStreamRequest(request, callback){
-        this.log.info("handleStreamRequest")
+        this.log.info("handleStreamRequest");
         let session = this.device.pendingSessions[request.sessionID].session;
         switch (request.type) {
             case this.api.hap.StreamRequestTypes.START:
                 this.log.info('START stream : ' + request.video.width + ' x ' + request.video.height + ', ' +
                     request.video.fps + ' fps, ' + request.video.max_bit_rate + ' kbps');
-                this.device.stream(request.sessionID, session, request, callback)
+                this.device.stream(request.sessionID, session, request, callback);
                 break;
             case this.api.hap.StreamRequestTypes.RECONFIGURE:
                 this.log.info('Received request to reconfigure: ' + request.video.width + ' x ' + request.video.height + ', ' +
@@ -91,8 +89,8 @@ export class Camera{
                 callback();
                 break;
             case this.api.hap.StreamRequestTypes.STOP:
-                this.log.info("STOP Stream")
-                this.device.stop_stream(request.sessionID)
+                this.log.info("STOP Stream");
+                this.device.stop_stream(request.sessionID);
                 if (session.timeout) {
                     clearTimeout(session.timeout);
                 }
@@ -111,41 +109,41 @@ export class Camera{
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#updateRecordingConfiguration
     updateRecordingConfiguration(configuration){
         this.configuration = configuration;
-        this.log.info('updateRecordingConfiguration', configuration)
+        this.log.info('updateRecordingConfiguration', configuration);
     }
 
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#handleRecordingStreamRequest
     async *handleRecordingStreamRequest(streamId) {
-        this.log.info('handleRecordingStreamRequest', streamId)
+        this.log.info('handleRecordingStreamRequest', streamId);
 
         this.handlingStreamingRequest = true;
 
-        const input = ["-i", "pipe:"]
+        const input = ["-i", "pipe:"];
 
-        let profile = ""
+        let profile = "";
         switch (this.configuration.videoCodec.parameters.profile) {
             case this.api.hap.H264Profile.MAIN:
-                profile = "main"
-                break
+                profile = "main";
+                break;
             case this.api.hap.H264Profile.BASELINE:
-                profile = "baseline"
-                break
+                profile = "baseline";
+                break;
             case this.api.hap.H264Profile.HIGH:
-                profile = "high"
-                break
+                profile = "high";
+                break;
         }
 
-        let level = ""
+        let level = "";
         switch (this.configuration.videoCodec.parameters.level) {
             case this.api.hap.H264Level.LEVEL3_1:
-                level = "3.1"
-                break
+                level = "3.1";
+                break;
             case this.api.hap.H264Level.LEVEL3_2:
-                level = "3.2"
-                break
+                level = "3.2";
+                break;
             case this.api.hap.H264Level.LEVEL4_0:
-                level = "4.0"
-                break
+                level = "4.0";
+                break;
         }
 
         const video = [
@@ -163,7 +161,7 @@ export class Camera{
             //`framerate=fps=25,scale=w=${this.configuration.videoCodec.resolution[0]}:h=${this.configuration.videoCodec.resolution[1]}:force_original_aspect_ratio=1,pad=${this.configuration.videoCodec.resolution[0]}:${this.configuration.videoCodec.resolution[1]}:(ow-iw)/2:(oh-ih)/2`,
             "-force_key_frames", `expr:eq(t,n_forced*${this.configuration.videoCodec.parameters.iFrameInterval / 1000})`,
             "-r", this.configuration.videoCodec.resolution[2].toString(),
-        ]
+        ];
         // https://github.com/seydx/homebridge-camera-ui/blob/eb00a33155f2d5c107cd21d53ba645f309bc5aca/src/services/recording.service.js#L168
         // https://github.com/homebridge/HAP-NodeJS/blob/00d8a11b92f3812302c7b23303139f82fd7f9b97/src/accessories/Camera_accessory.ts#L350
 
@@ -200,9 +198,9 @@ export class Camera{
             "-ar", `${samplerate}k`,
             "-b:a", `${this.configuration.audioCodec.bitrate}k`,
             "-ac", `${this.configuration.audioCodec.audioChannels}`,
-        ]
+        ];
 
-        this.server = new Recording(this.log, input, audio, video, this.device)
+        this.server = new Recording(this.log, input, audio, video, this.device);
 
         await this.server.start();
         if (!this.server || this.server.destroyed) {
@@ -227,7 +225,7 @@ export class Camera{
                     const isLast = !this.device.recording_buffer.streaming;
 
                     if(isLast){
-                        console.log("isLast")
+                        console.log("isLast");
                     }
 
                     yield {
@@ -250,13 +248,13 @@ export class Camera{
 
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#acknowledgeStream
     acknowledgeStream(streamId){
-        this.log.info('acknowledgeStream', streamId)
+        this.log.info('acknowledgeStream', streamId);
     }
 
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#closeRecordingStream
     closeRecordingStream(streamId, reason){
-        this.log.info('closeRecordingStream', streamId, this.api.hap.HDSProtocolSpecificErrorReason[reason])
-        this.device.stop_record()
+        this.log.info('closeRecordingStream', streamId, this.api.hap.HDSProtocolSpecificErrorReason[reason]);
+        this.device.stop_record();
         if (this.server) {
             this.server.destroy();
             this.server = undefined;

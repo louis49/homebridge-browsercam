@@ -1,11 +1,11 @@
 import * as WebSocket from "ws";
 import EventEmitter from "events";
 
-const timeout = 10000
+const timeout = 10000;
 export class Websocket extends EventEmitter{
     constructor(server) {
-        super()
-        this.server = server
+        super();
+        this.server = server;
 
         this.websocketServer = new WebSocket.WebSocketServer({
             noServer: true,
@@ -21,19 +21,19 @@ export class Websocket extends EventEmitter{
         this.websocketServer.on(
             "connection",
             (websocketConnection, connectionRequest) => {
-                const url = new URL(connectionRequest.url, connectionRequest.headers.origin)
-                const id = url.searchParams.get('id')
+                const url = new URL(connectionRequest.url, connectionRequest.headers.origin);
+                const id = url.searchParams.get('id');
 
-                this.emit('open', id, websocketConnection)
+                this.emit('open', id, websocketConnection);
 
                 //console.log("WS New connection from", id)
 
                 websocketConnection.aliveTimeout = setInterval(async () => {
                     if(websocketConnection.readyState === websocketConnection.OPEN){
                         //console.log("Send ping")
-                        websocketConnection.send(JSON.stringify({ping:true, id}))
+                        websocketConnection.send(JSON.stringify({ping:true, id}));
                         websocketConnection.pingTimeout = setTimeout( () => {
-                            console.log("WS Not receiving pong from", id)
+                            console.log("WS Not receiving pong from", id);
                             websocketConnection.close();
                         }, timeout * 1.5);
                     }
@@ -41,7 +41,7 @@ export class Websocket extends EventEmitter{
 
                 websocketConnection.on("message", (message, isBinary) => {
                     if(!isBinary){
-                        let json = JSON.parse(message.toString('utf-8'))
+                        let json = JSON.parse(message.toString());
                         //console.log("WS: ", json)
                         if(json.ping){
                             //console.log('Receive ping')

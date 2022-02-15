@@ -1,4 +1,4 @@
-import forge from "node-forge"
+import forge from "node-forge";
 import crypto from "crypto";
 
 export class Certificate {
@@ -26,6 +26,6 @@ export class Certificate {
         return {
             cert : forge.pki.certificateToPem(cert),
             key : forge.pki.privateKeyToPem(keys.privateKey),
-        }
+        };
     }
 }

@@ -3,15 +3,15 @@ import {spawn} from "child_process";
 
 export class Webmbufferkeyframe {
     constructor(duration) {
-        this.duration = duration
-        this.current_duration = 0
-        this.buffer = new Buffer.from([])
-        this.streaming = false
-        this.debug = false
+        this.duration = duration;
+        this.current_duration = 0;
+        this.buffer = new Buffer.from([]);
+        this.streaming = false;
+        this.debug = false;
     }
 
     parseHead(buffer){
-        let cursor = 0
+        let cursor = 0;
         while (cursor < buffer.length){
             if(
                 (buffer[cursor] === 0x1a) &&
@@ -19,9 +19,9 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xdf) &&
                 (buffer[cursor+3] === 0xa3)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Main Head", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
+                cursor += size.value + size.length + 4;
             }
             //SEGMENT
             else if(
@@ -30,9 +30,9 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0x80) &&
                 (buffer[cursor+3] === 0x67)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Segment", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
+                cursor += size.value + size.length + 4;
             }
             // INFO
             else if(
@@ -41,9 +41,9 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xa9) &&
                 (buffer[cursor+3] === 0x66)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Info", cursor, cursor + size.value + size.length + 4)
-                cursor += size.value + size.length + 4
+                cursor += size.value + size.length + 4;
             }
             // TRACKS
             else if(
@@ -52,10 +52,10 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xae) &&
                 (buffer[cursor+3] === 0x6b)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Tracks", cursor, cursor + size.value + size.length + 4)
-                this.parseTracks(buffer, cursor + size.length + 4, size.value)
-                cursor += size.value + size.length + 4
+                this.parseTracks(buffer, cursor + size.length + 4, size.value);
+                cursor += size.value + size.length + 4;
             }
             //CLUSTER
             else if(
@@ -64,181 +64,181 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xb6) &&
                 (buffer[cursor+3] === 0x75)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
                 //cursor += size.value + size.length + 4
-                return cursor
+                return cursor;
             }
             else{
-                let k = buffer.slice(cursor, cursor+4).toString('hex')
-                console.log(k)
+                let k = buffer.slice(cursor, cursor+4).toString('hex');
+                console.log(k);
             }
         }
     }
 
     parseTracks(buffer, start, length){
-        let cursor = start
+        let cursor = start;
         while(cursor < start + length){
             if(
                 (buffer[cursor] === 0xae)
             ) {
-                let size = this.readSize(buffer, cursor + 1)
+                let size = this.readSize(buffer, cursor + 1);
                 //console.log("Found Track", cursor, cursor + size.value + size.length + 1)
-                this.parseTrackEntry(buffer, cursor + size.length + 1, size.value)
-                cursor += size.value + size.length + 1
+                this.parseTrackEntry(buffer, cursor + size.length + 1, size.value);
+                cursor += size.value + size.length + 1;
             }
         }
     }
 
     parseTrackEntry(buffer, start, length){
-        let cursor = start
-        let track_number = 0
+        let cursor = start;
+        let track_number = 0;
         while(cursor < start + length){
             // TRACK NUMBER
             if(
                 (buffer[cursor] === 0xd7)
             ){
-                let size = this.readSize(buffer, cursor + 1)
-                track_number = buffer.readUIntBE(cursor+1 + size.length, size.value)
+                let size = this.readSize(buffer, cursor + 1);
+                track_number = buffer.readUIntBE(cursor+1 + size.length, size.value);
                 //console.log("   Found Track Number", cursor, cursor + size.value + size.length + 1)
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             //TrackUID
             else if(
                 (buffer[cursor] === 0x73) &&
                 (buffer[cursor+1] === 0xc5)
             ) {
-                let size = this.readSize(buffer, cursor + 2)
+                let size = this.readSize(buffer, cursor + 2);
                 //console.log("   Found Track UID", cursor, cursor + size.value + size.length + 2)
-                cursor += size.value + size.length + 2
+                cursor += size.value + size.length + 2;
             }
             // TRACK TYPE
             else if(
                 (buffer[cursor] === 0x83)
             ){
-                let size = this.readSize(buffer, cursor + 1)
-                let track_type = buffer.readUIntBE(cursor + 1 + size.length, size.value)
+                let size = this.readSize(buffer, cursor + 1);
+                let track_type = buffer.readUIntBE(cursor + 1 + size.length, size.value);
                 if(track_type === 1){
-                    this.video_track = track_number
+                    this.video_track = track_number;
                 }
                 else if(track_type === 2){
-                    this.audio_track = track_number
+                    this.audio_track = track_number;
                 }
                 //console.log("   Found Track Type", cursor, cursor + size.value + size.length + 1)
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             // CODECID
             else if(
                 (buffer[cursor] === 0x86)
             ){
-                let size = this.readSize(buffer, cursor + 1)
+                let size = this.readSize(buffer, cursor + 1);
                 //console.log("   Found Codec ID", cursor, cursor + size.value + size.length + 1)
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             // TRACK VIDEO
             else if(
                 (buffer[cursor] === 0xe0)
             ){
-                let size = this.readSize(buffer, cursor + 1)
+                let size = this.readSize(buffer, cursor + 1);
                 //console.log("   Found TrackVideo", cursor, cursor + size.value + size.length + 1)
                 //this.parseTrackVideo(buffer, cursor + size.length + 1, size.value)
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             // TRACK Audio
             else if(
                 (buffer[cursor] === 0xe1)
             ){
-                let size = this.readSize(buffer, cursor + 1)
+                let size = this.readSize(buffer, cursor + 1);
                 //console.log("   Found Track Audio", cursor, cursor + size.value + size.length + 1)
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             // CodecPrivate
             else if(
                 (buffer[cursor] === 0x63) &&
                 (buffer[cursor+1] === 0xa2)
             ){
-                let size = this.readSize(buffer, cursor + 2)
+                let size = this.readSize(buffer, cursor + 2);
                 //console.log("   Found Codec Private", cursor, cursor + size.value + size.length + 2)
-                cursor += size.value + size.length + 2
+                cursor += size.value + size.length + 2;
             }
             //MaxBlockAdditionID
             else if(
                 (buffer[cursor] === 0x55) &&
                 (buffer[cursor+1] === 0xee)
             ){
-                let size = this.readSize(buffer, cursor + 2)
+                let size = this.readSize(buffer, cursor + 2);
                 //console.log("   Found MaxBlockAdditionID", cursor, cursor + size.value + size.length + 2)
-                cursor += size.value + size.length + 2
+                cursor += size.value + size.length + 2;
             }
             else
             {
-                let k = buffer.slice(cursor).toString('hex')
-                console.log(k)
-                break
+                let k = buffer.slice(cursor).toString('hex');
+                console.log(k);
+                break;
             }
         }
     }
 
 
     clone(){
-        let webmbuffer = new Webmbufferkeyframe(this.duration)
+        let webmbuffer = new Webmbufferkeyframe(this.duration);
 
-        webmbuffer.streaming = false
-        webmbuffer.head_buffer = Buffer.from(this.head_buffer)
-        webmbuffer.buffer = Buffer.from(this.buffer)
-        webmbuffer.current_duration = this.current_duration
+        webmbuffer.streaming = false;
+        webmbuffer.head_buffer = Buffer.from(this.head_buffer);
+        webmbuffer.buffer = Buffer.from(this.buffer);
+        webmbuffer.current_duration = this.current_duration;
 
-        return webmbuffer
+        return webmbuffer;
     }
 
     append(buffer){
 
-        this.buffer = Buffer.concat([this.buffer, buffer])
+        this.buffer = Buffer.concat([this.buffer, buffer]);
         if(this.buffer.length > 1000){
             if(!this.head_buffer){
-                let cluster_cursor = this.parseHead(this.buffer)
-                this.head_buffer = this.buffer.slice(0, cluster_cursor)
-                this.buffer = this.buffer.slice(cluster_cursor)
+                let cluster_cursor = this.parseHead(this.buffer);
+                this.head_buffer = this.buffer.slice(0, cluster_cursor);
+                this.buffer = this.buffer.slice(cluster_cursor);
             }
             if(!this.streaming){
-                this.reduceBuffer()
+                this.reduceBuffer();
             }
         }
     }
 
     reduceBuffer() {
         // START
-        let current_cluster = this.findNextBlock(this.buffer, 0, 0)
-        let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
+        let current_cluster = this.findNextBlock(this.buffer, 0, 0);
+        let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code);
 
         // END
-        let last_block = this.findLastBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
+        let last_block = this.findLastBlock(this.buffer, current_block.next_cursor, current_cluster.time_code);
 
         if(last_block){
-            let current_cluster_keyframe = Object.assign({}, current_cluster)
-            let current_block_keyframe = Object.assign({}, current_block)
+            let current_cluster_keyframe = Object.assign({}, current_cluster);
+            let current_block_keyframe = Object.assign({}, current_block);
             while( (last_block.time_code - current_cluster.time_code) > this.duration ) {
-                let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
+                let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code);
 
                 if ((last_block.time_code - block.time_code) > this.duration ){
                     if(block.cluster){
-                        current_cluster = block
+                        current_cluster = block;
                     }
                     else if(block.keyframe && block.track_number === this.video_track){
-                        current_block_keyframe = block
-                        current_cluster_keyframe = current_cluster
+                        current_block_keyframe = block;
+                        current_cluster_keyframe = current_cluster;
                     }
-                    current_block = block
+                    current_block = block;
                 }
                 else {
-                    break
+                    break;
                 }
             }
 
             if(current_cluster_keyframe.start_cursor !== 0){
-                this.buffer=this.buffer.slice(current_cluster_keyframe.start_cursor)
+                this.buffer=this.buffer.slice(current_cluster_keyframe.start_cursor);
                 //console.log("Nouvelle durée KeyFrame :", last_block.time_code - current_cluster_keyframe.time_code, this.buffer.length)
-                this.current_duration = (last_block.time_code) - (current_cluster_keyframe.time_code)
+                this.current_duration = (last_block.time_code) - (current_cluster_keyframe.time_code);
             }
             else{
                 //console.log("Current Duration :", last_block.time_code - current_cluster_keyframe.time_code)
@@ -247,75 +247,75 @@ export class Webmbufferkeyframe {
     }
 
     consume(writer){
-        this.streaming = true
-        console.log("START STREAMING")
+        this.streaming = true;
+        console.log("START STREAMING");
 
         if(this.debug) {
-            this.debug_file = "debug-" + new Date().getTime() + ".webm"
+            this.debug_file = "debug-" + new Date().getTime() + ".webm";
         }
 
-        let current_cluster = this.findNextBlock(this.buffer, 0)
-        let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code)
+        let current_cluster = this.findNextBlock(this.buffer, 0);
+        let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code);
 
 
-        let init_cluster = Object.assign({}, current_cluster)
+        let init_cluster = Object.assign({}, current_cluster);
 
         while( (current_block.time_code - init_cluster.time_code) < this.duration ) {
-            let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code)
+            let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code);
 
             if(!block){
-                break
+                break;
             }
             if ((block.time_code - init_cluster.time_code) < this.duration ){
                 if(block.cluster){
-                    current_cluster = block
+                    current_cluster = block;
                 }
-                current_block = block
+                current_block = block;
             }
             else {
-                break
+                break;
             }
         }
 
-        console.log("Sending", (current_block.time_code - init_cluster.time_code), "Reste:", this.buffer.length - current_block.start_cursor)
+        console.log("Sending", (current_block.time_code - init_cluster.time_code), "Reste:", this.buffer.length - current_block.start_cursor);
 
-        let head = this.head_buffer
-        let first_frame = this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor)
+        let head = this.head_buffer;
+        let first_frame = this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor);
 
         if(this.debug){
-            fs.writeFileSync(this.debug_file, head, {flag:'a'})
-            fs.writeFileSync(this.debug_file, first_frame, {flag:'a'})
+            fs.writeFileSync(this.debug_file, head, {flag:'a'});
+            fs.writeFileSync(this.debug_file, first_frame, {flag:'a'});
         }
 
-        writer.write(head)
-        writer.write(first_frame)
-        this.tick(writer, current_cluster, 0, current_cluster.time_code, 0)
+        writer.write(head);
+        writer.write(first_frame);
+        this.tick(writer, current_cluster, 0, current_cluster.time_code, 0);
     }
 
     tick(writer, current, total, cluster_timecode, time_out){
         setTimeout(() => {
-            let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode)
+            let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
 
             if(!next){
-                console.log("FLUX END : WRITING END STREAMING")
-                this.streaming = false
-                writer.end(new Buffer.from([]))
-                return
+                console.log("FLUX END : WRITING END STREAMING");
+                this.streaming = false;
+                writer.end(new Buffer.from([]));
+                return;
             }
 
             if(next.cluster){
-                cluster_timecode =  next.time_code
+                cluster_timecode =  next.time_code;
             }
 
             if(this.streaming === false){
-                console.log("WRITING END STREAMING")
-                writer.end(this.buffer.slice(next.start_cursor, next.next_cursor))
+                console.log("WRITING END STREAMING");
+                writer.end(this.buffer.slice(next.start_cursor, next.next_cursor));
                 return;
             }
             else{
-                let frame = this.buffer.slice(next.start_cursor, next.next_cursor)
+                let frame = this.buffer.slice(next.start_cursor, next.next_cursor);
                 if(this.debug) {
-                    fs.writeFileSync(this.debug_file, frame, {flag:'a'})
+                    fs.writeFileSync(this.debug_file, frame, {flag:'a'});
                 }
                 writer.write(frame)
             }
@@ -328,44 +328,44 @@ export class Webmbufferkeyframe {
                 console.log("CLEANING")
             }
 
-            time_out = (next.time_code - current.time_code)
+            time_out = (next.time_code - current.time_code);
             if(time_out <= 0){
-                time_out = 10
+                time_out = 10;
             }
-            total += time_out
+            total += time_out;
 
             //console.log('Timeout', time_out, next.track_number, next.time_code, total)
-            this.tick(writer, next, total, cluster_timecode, time_out)
-        }, time_out)
+            this.tick(writer, next, total, cluster_timecode, time_out);
+        }, time_out);
     }
 
     stop(){
-        console.log("STOP STREAMING : this.streaming = false")
-        this.streaming = false
+        console.log("STOP STREAMING : this.streaming = false");
+        this.streaming = false;
     }
 
     findLastBlock(buffer, cursor, time_code_cluster){
-        let current_cluster = null
-        let found_block = null
+        let current_cluster = null;
+        let found_block = null;
         while (cursor < this.buffer.length){
-            let block = this.findNextBlock(this.buffer, cursor, time_code_cluster)
+            let block = this.findNextBlock(this.buffer, cursor, time_code_cluster);
 
             if(block){
                 if(block.cluster){
-                    current_cluster = block
-                    time_code_cluster = block.time_code
+                    current_cluster = block;
+                    time_code_cluster = block.time_code;
                 }
 
-                cursor = block.next_cursor
+                cursor = block.next_cursor;
                 if(cursor < buffer.length){
-                    found_block = block
+                    found_block = block;
                 }
             }
             else{
-                break
+                break;
             }
         }
-        return found_block
+        return found_block;
     }
 
     findNextBlock(buffer, cursor, time_code_cluster){
@@ -377,41 +377,41 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xb6) &&
                 (buffer[cursor+3] === 0x75)
             ){
-                let start_cursor = cursor
-                let size = this.readSize(buffer, cursor + 4)
+                let start_cursor = cursor;
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
-                let cluster_cursor = cursor + size.value + size.length + 4
-                cursor += size.length + 4 // size.length
-                let time_code = this.readClusterTimeCode(buffer, cursor)
-                return {start_cursor, next_cursor : time_code.next_cursor, time_code : time_code.time_code, cluster:true}
+                let cluster_cursor = cursor + size.value + size.length + 4;
+                cursor += size.length + 4; // size.length
+                let time_code = this.readClusterTimeCode(buffer, cursor);
+                return {start_cursor, next_cursor : time_code.next_cursor, time_code : time_code.time_code, cluster:true};
             }
             else if(
                 (buffer[cursor] === 0xa3)
             ){
-                let size = this.readSize(buffer, cursor + 1)
+                let size = this.readSize(buffer, cursor + 1);
 
-                let track_number = this.readSize(buffer, cursor+size.length+1)
-                let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1)
-                let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2)
+                let track_number = this.readSize(buffer, cursor+size.length+1);
+                let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1);
+                let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2);
 
-                let start_cursor = cursor
+                let start_cursor = cursor;
                 //console.log("Found Block", cursor, size.value + size.length + 1, time_code_cluster+time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe")
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
 
 
-                return {start_cursor, next_cursor : cursor, time_code : time_code+time_code_cluster, cluster:false, track_number:track_number.value, keyframe:keyframe >= 0b1}
+                return {start_cursor, next_cursor : cursor, time_code : time_code+time_code_cluster, cluster:false, track_number:track_number.value, keyframe:keyframe >= 0b1};
 
             }
             else{
-                console.log(buffer.slice(cursor, cursor+4).toString('hex'))
+                console.log(buffer.slice(cursor, cursor+4).toString('hex'));
             }
         }
     }
 
     parseBody(buffer, cursor){
-        let cluster_time_code = 0
-        let current_timecode = 0
-        let count = 0
+        let cluster_time_code = 0;
+        let current_timecode = 0;
+        let count = 0;
         while (cursor < buffer.length - 8){
             if(
                 (buffer[cursor] === 0x1f) &&
@@ -419,44 +419,44 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+2] === 0xb6) &&
                 (buffer[cursor+3] === 0x75)
             ){
-                let size = this.readSize(buffer, cursor + 4)
+                let size = this.readSize(buffer, cursor + 4);
                 //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
-                cursor += size.length + 4
-                let time_code = this.readClusterTimeCode(buffer, cursor)
-                cluster_time_code = time_code.time_code
-                console.log("Found Cluster",  cursor-size.length - 4, size.value + (cursor - size.length - 4), time_code.time_code)
-                cursor = time_code.next_cursor
+                cursor += size.length + 4;
+                let time_code = this.readClusterTimeCode(buffer, cursor);
+                cluster_time_code = time_code.time_code;
+                console.log("Found Cluster",  cursor-size.length - 4, size.value + (cursor - size.length - 4), time_code.time_code);
+                cursor = time_code.next_cursor;
             }
             else if(
                 (buffer[cursor] === 0xa3)
             ){
-                let size = this.readSize(buffer, cursor + 1)
-                let track_number = this.readSize(buffer, cursor+size.length+1)
-                let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1)
-                let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2)
+                let size = this.readSize(buffer, cursor + 1);
+                let track_number = this.readSize(buffer, cursor+size.length+1);
+                let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1);
+                let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2);
                 //if(track_number.value === this.video_track && (keyframe >= 0b1)){//
-                    console.log("Found Block", cursor, cursor + size.value + size.length + 1, time_code + cluster_time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe" , buffer.slice(cursor, cursor+4).toString('hex'))
+                    console.log("Found Block", cursor, cursor + size.value + size.length + 1, time_code + cluster_time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe" , buffer.slice(cursor, cursor+4).toString('hex'));
                     //console.log("Found Block", time_code +cluster_time_code, (time_code +cluster_time_code)-current_timecode)
-                    current_timecode = time_code + cluster_time_code
-                    count ++
+                    current_timecode = time_code + cluster_time_code;
+                    count ++;
                 //}
-                cursor += size.value + size.length + 1
+                cursor += size.value + size.length + 1;
             }
             else{
-                console.log(buffer.slice(cursor, cursor+4).toString('hex'))
+                console.log(buffer.slice(cursor, cursor+4).toString('hex'));
             }
         }
-        return cursor
+        return cursor;
     }
 
     readClusterTimeCode(buffer, cursor){
         if(
             (buffer[cursor] === 0xe7)
         ){
-            let size = this.readSize(buffer, cursor + 1)
-            let time_code = buffer.readUIntBE(cursor + 1 + size.length, size.value)
+            let size = this.readSize(buffer, cursor + 1);
+            let time_code = buffer.readUIntBE(cursor + 1 + size.length, size.value);
             //console.log("    Found TimeCode", time_code, cursor, size.value + size.length + 1)
-            return {time_code, next_cursor:cursor+size.length+size.value+1}
+            return {time_code, next_cursor:cursor+size.length+size.value+1};
         }
     }
 

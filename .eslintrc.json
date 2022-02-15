@@ -1,0 +1,13 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+
+    }
+  },
+  "rules": {
+    "no-confusing-arrow": ["error", {"allowParens": true}],
+    "semi": "error"
+  }
+}

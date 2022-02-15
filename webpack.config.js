@@ -1,4 +1,4 @@
-import webpack from "webpack"
+import webpack from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import path, {dirname} from "path";

@@ -8,7 +8,7 @@ export class Rtsp{
             rtpPortCount: 10000,
             rtpPortStart: 10000
         });
-        let hooks = {checkMount: this.checkMount.bind(this)}
+        let hooks = {checkMount: this.checkMount.bind(this)};
         try{
             this.publishServer = new _PublishServer.PublishServer(server_port, mounts);
             this.clientServer = new _ClientServer.ClientServer(client_port, mounts, hooks);
@@ -19,12 +19,12 @@ export class Rtsp{
 
     }
 
-    async checkMount(req){
+    checkMount(req){
         const url = new URL(req.uri);
 
         if(this.clientServer.mounts.mounts[url.pathname]){
-            console.log('mount', url.pathname, 'exist')
-            return true
+            console.log('mount', url.pathname, 'exist');
+            return true;
         }
         return 404;
     }
