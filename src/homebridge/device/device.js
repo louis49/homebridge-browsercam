@@ -58,6 +58,7 @@ export class Device extends EventEmitter{
                 this.data(message);
             }
             else{
+                //console.log(message.toString());
                 let json = JSON.parse(message.toString());
                 //this.log.debug(json)
                 if(json.settings){
@@ -66,8 +67,12 @@ export class Device extends EventEmitter{
                     this.prepare();
                     if(!this.ready){
                         this.ready = true;
+                        this.ws.send(JSON.stringify({pulse_detector : {threshold:this.config.pulse_detector.threshold}}));
                         this.emit('ready', this);
                     }
+                }
+                else if (json.pulse){
+                    this.emit('pulse');
                 }
             }
         });

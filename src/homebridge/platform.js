@@ -54,6 +54,11 @@ export class BrowserCam {
             accessory.addService(this.api.hap.Service.OccupancySensor, 'Noise sensor', this.api.hap.uuid.generate('Noise Sensor'), 'noise');
         }
 
+        // Pulse detector
+        if(this.config.pulse_detector.active) {
+            accessory.addService(this.api.hap.Service.OccupancySensor, 'Pulse sensor', this.api.hap.uuid.generate('Pulse Sensor'), 'pulse');
+        }
+
         //accessory.addService(this.api.hap.Service, 'Adjust', this.api.hap.uuid.generate('Adjust') , 'adjust')
 
         this.configureAccessory(accessory);
@@ -103,32 +108,36 @@ export class BrowserCam {
             });
 */
 
+        accessory.context.device.motion_detected = false;
+        accessory.context.device.noise_detected = false;
+        accessory.context.device.pulse_detected = false;
+
         // MOTION SENSOR
         if(this.config.motion_detector.active){
             this.motion_sensor = accessory.getService('Motion sensor');
-            accessory.context.device.motion_detected = false;
             this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).on("get", (callback => {
-                //this.log.info('MotionDetected get', accessory.context.device.motion_detected);
-                callback(null, accessory.context.device.motion_detected);
+                let res = accessory.context.device.motion_detected || accessory.context.device.noise_detected || accessory.context.device.pulse_detected;
+                this.log.info('MOTION SENSOR MotionDetected get', res);
+                callback(true, res);
             }));
 
             accessory.context.device.on('motion', async() => {
                 //this.log.info('Current duration :', accessory.context.device.recording_buffer.current_duration)
                 if(accessory.context.device.recording_buffer.current_duration >= this.config.recording.buffer){
-                    if(accessory.context.motion_timeout){
+                    if(accessory.context.device.motion_timeout){
                         //this.log.info('MOTION SENSOR', 'ClearTimeout')
-                        clearTimeout(accessory.context.motion_timeout);
+                        clearTimeout(accessory.context.device.motion_timeout);
                     }
                     else{
                         this.log.info('MOTION SENSOR', 'updateValue(true)');
                         accessory.context.device.motion_detected = true;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
                     }
-                    accessory.context.motion_timeout = setTimeout(() => {
+                    accessory.context.device.motion_timeout = setTimeout(() => {
                         this.log.info('MOTION SENSOR', 'updateValue(false)');
-                        accessory.context.device.motion_detected = true;
+                        accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
-                        accessory.context.motion_timeout = null;
+                        accessory.context.device.motion_timeout = null;
                     }, this.config.motion_detector.timeout);
                 }
             });
@@ -138,28 +147,75 @@ export class BrowserCam {
         // NOISE SENSOR
         if(this.config.noise_detector.active){
             this.noise_sensor = accessory.getService('Noise sensor');
-            accessory.context.noise_detected = false;
             this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).on("get", (callback => {
-                //this.log.info('OccupancyDetected get', accessory.context.noise_detected);
-                callback(null, accessory.context.noise_detected);
+                this.log.info('NOISE SENSOR OccupancyDetected get', accessory.context.device.noise_detected);
+                callback(null, accessory.context.device.noise_detected);
             }));
 
             accessory.context.device.on('noise', () => {
-                if(accessory.context.noise_timeout){
+                if(accessory.context.device.noise_timeout){
                     //this.log.info('NOISE SENSOR', 'ClearTimeout');
-                    clearTimeout(accessory.context.noise_timeout);
+                    clearTimeout(accessory.context.device.noise_timeout);
                 }
                 else{
                     this.log.info('NOISE SENSOR', 'updateValue(true)');
-                    accessory.context.noise_detected = true;
+                    accessory.context.device.noise_detected = true;
                     this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(true);
+
+                    if(this.config.noise_detector.record && !accessory.context.device.motion_detected && !accessory.context.device.pulse_detected){
+                        this.log.info('MOTION SENSOR (NOISE)', 'updateValue(true)');
+                        accessory.context.device.motion_detected = true;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
+                    }
                 }
-                accessory.context.noise_timeout = setTimeout(() => {
+                accessory.context.device.noise_timeout = setTimeout(() => {
                     this.log.info('NOISE SENSOR', 'updateValue(false)');
-                    accessory.context.noise_detected = true;
+                    accessory.context.device.noise_detected = false;
                     this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(false);
-                    accessory.context.noise_timeout = null;
+                    accessory.context.device.noise_timeout = null;
+                    if(this.config.noise_detector.record && !accessory.context.device.motion_detected && !accessory.context.device.pulse_detected){
+                        this.log.info('MOTION SENSOR (NOISE)', 'updateValue(false)');
+                        accessory.context.device.motion_detected = false;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
+                    }
                 }, this.config.noise_detector.timeout);
+            });
+        }
+
+        // PULSE SENSOR
+        if(this.config.pulse_detector.active){
+            this.pulse_sensor = accessory.getService('Pulse sensor');
+            this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).on("get", (callback => {
+                this.log.info('PULSE SENSOR OccupancyDetected get', accessory.context.device.noise_detected);
+                callback(null, accessory.context.device.pulse_detected);
+            }));
+
+            accessory.context.device.on('pulse', () => {
+                if(accessory.context.pulse_timeout){
+                    //this.log.info('NOISE SENSOR', 'ClearTimeout');
+                    clearTimeout(accessory.context.pulse_timeout);
+                }
+                else{
+                    this.log.info('PULSE SENSOR', 'updateValue(true)');
+                    accessory.context.pulse_detected = true;
+                    this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(true);
+                    if(this.config.pulse_detector.record && !accessory.context.motion_detected && !accessory.context.noise_detected){
+                        this.log.info('MOTION SENSOR (PULSE)', 'updateValue(true)');
+                        accessory.context.device.motion_detected = true;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
+                    }
+                }
+                accessory.context.pulse_timeout = setTimeout(() => {
+                    this.log.info('PULSE SENSOR', 'updateValue(false)');
+                    accessory.context.pulse_detected = false;
+                    this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(false);
+                    accessory.context.pulse_timeout = null;
+                    if(this.config.pulse_detector.record && !accessory.context.motion_detected && !accessory.context.noise_detected){
+                        this.log.info('MOTION SENSOR (PULSE)', 'updateValue(false)');
+                        accessory.context.device.motion_detected = false;
+                        this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
+                    }
+                }, this.config.pulse_detector.timeout);
             });
         }
 

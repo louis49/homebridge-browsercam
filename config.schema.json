@@ -83,11 +83,52 @@
           "description" : "Activate noise detector",
           "required": true
         },
+        "record": {
+          "type": "boolean",
+          "default": false,
+          "description" : "Noise detector activate record",
+          "required": true
+        },
         "threshold": {
           "type": "integer",
           "default": 5,
           "placeholder": "%",
           "description" : "Threshold of detection in percent (%)",
+          "minimum": 0,
+          "maximum": 100,
+          "required": true
+        },
+        "timeout": {
+          "type": "integer",
+          "default": 30000,
+          "placeholder": "milliseconds",
+          "description" : "Duration in milliseconds of timeout after last event (how many times record after last detected noise)",
+          "minimum": 1000,
+          "maximum": 120000,
+          "required": true
+        }
+      }
+    },
+    "pulse_detector": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "default": true,
+          "description" : "Activate pulse detector",
+          "required": true
+        },
+        "record": {
+          "type": "boolean",
+          "default": false,
+          "description" : "Pulse detector activate record",
+          "required": true
+        },
+        "threshold": {
+          "type": "number",
+          "default": 0.05,
+          "placeholder": "m/s^2",
+          "description" : "Threshold of detection in m/s^2",
           "minimum": 0,
           "maximum": 100,
           "required": true
