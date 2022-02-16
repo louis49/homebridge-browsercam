@@ -116,8 +116,6 @@ export class Camera{
     async *handleRecordingStreamRequest(streamId) {
         this.log.info('handleRecordingStreamRequest', streamId);
 
-        this.handlingStreamingRequest = true;
-
         const input = ["-i", "pipe:"];
 
         let profile = "";
@@ -189,7 +187,6 @@ export class Camera{
                 throw new Error("Unsupported audio samplerate: " + this.configuration.audioCodec.samplerate);
         }
 
-        // Gérer Opus ?
         const audio = [
             "-acodec", "libfdk_aac",
             ...(this.configuration.audioCodec.type === this.api.hap.AudioRecordingCodecType.AAC_LC ?
@@ -204,7 +201,7 @@ export class Camera{
 
         await this.server.start();
         if (!this.server || this.server.destroyed) {
-            return; // early exit
+            return;
         }
 
         const pending = [];
@@ -213,14 +210,10 @@ export class Camera{
             for await (const box of this.server.generator()) {
                 pending.push(box.header, box.data);
 
-                //const motionDetected = camera.getService(Service.MotionSensor)?.getCharacteristic(Characteristic.MotionDetected).value;
-
-                //console.log("mp4 box type " + box.type + " and length " + box.length);
                 if (box.type === "moov" || box.type === "mdat") {
                     const fragment = Buffer.concat(pending);
                     pending.splice(0, pending.length);
 
-                    //&& !this.device.motiondetected
 
                     const isLast = !this.device.recording_buffer.streaming;
 
@@ -259,6 +252,5 @@ export class Camera{
             this.server.destroy();
             this.server = undefined;
         }
-        this.handlingStreamingRequest = false;
     }
 }

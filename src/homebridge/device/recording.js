@@ -59,7 +59,7 @@ export class Recording{
         const port = this.server.address()["port"];
         this.args.push("tcp://127.0.0.1:" + port);
 
-        this.log.info('RECORDING', ffmpeg_for_homebridge??"ffmpeg" + " " + this.args.join(" "));
+        //this.log.info('RECORDING', ffmpeg_for_homebridge??"ffmpeg" + " " + this.args.join(" "));
 
         this.ffmpeg_process = spawn(ffmpeg_for_homebridge??"ffmpeg", this.args, { env: process.env });
 

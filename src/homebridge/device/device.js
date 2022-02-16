@@ -139,10 +139,12 @@ export class Device extends EventEmitter{
     }
 
     stop_stream(sessionID){
-        if(this.pendingSessions[sessionID]){
+        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].streaming) {
             this.pendingSessions[sessionID].streaming.stop();
-            this.pendingSessions[sessionID].buffer.stop();
             this.pendingSessions[sessionID].streaming = null;
+        }
+        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].buffer){
+            this.pendingSessions[sessionID].buffer.stop();
             this.pendingSessions[sessionID].buffer = null;
         }
     }

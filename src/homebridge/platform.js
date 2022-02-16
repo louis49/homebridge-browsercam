@@ -138,6 +138,7 @@ export class BrowserCam {
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
                         accessory.context.device.motion_timeout = null;
+                        accessory.context.device.stop_record();
                     }, this.config.motion_detector.timeout);
                 }
             });
