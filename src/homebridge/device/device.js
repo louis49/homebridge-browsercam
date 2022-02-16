@@ -81,7 +81,7 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.log.info('MOTION DETECTOR START');
-            this.motion_detector = new MotionDetector(this.settings.height, this.settings.width, this.config.motion_detector.threshold);
+            this.motion_detector = new MotionDetector(this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 
@@ -118,10 +118,12 @@ export class Device extends EventEmitter{
     }
 
     stop_stream(sessionID){
-        this.pendingSessions[sessionID].streaming.stop();
-        this.pendingSessions[sessionID].buffer.stop();
-        this.pendingSessions[sessionID].streaming = null;
-        this.pendingSessions[sessionID].buffer = null;
+        if(this.pendingSessions[sessionID]){
+            this.pendingSessions[sessionID].streaming.stop();
+            this.pendingSessions[sessionID].buffer.stop();
+            this.pendingSessions[sessionID].streaming = null;
+            this.pendingSessions[sessionID].buffer = null;
+        }
     }
 
     record(stdin){

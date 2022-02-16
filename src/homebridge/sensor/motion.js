@@ -6,15 +6,16 @@ import {fileURLToPath} from "url";
 const directory = dirname(fileURLToPath(import.meta.url));
 
 export class MotionDetector extends EventEmitter{
-    constructor(height, width, threshold) {
+    constructor(height, width, threshold, id) {
         super();
         this.height = height;
         this.width = width;
         this.threshold = threshold;
+        this.id = id;
         this.demo = true;
 
         let worker_path = path.join(directory, "worker_motion.js");
-        this.worker = new Worker(worker_path, {workerData:{height : this.height, width : this.width, demo:this.demo, threshold:this.threshold}, stdin: true});
+        this.worker = new Worker(worker_path, {workerData:{height : this.height, width : this.width, demo:this.demo, threshold:this.threshold, id:this.id}, stdin: true});
 
         this.worker.stdin.on('error',  (e) => {});
 

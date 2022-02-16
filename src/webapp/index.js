@@ -36,4 +36,4 @@ async function start(){
     }
 }
 
-start().then(r => console.log(r));
+start().then(() => {});
