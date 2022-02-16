@@ -118,7 +118,7 @@ export class BrowserCam {
             this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).on("get", (callback => {
                 let res = accessory.context.device.motion_detected || accessory.context.device.noise_detected || accessory.context.device.pulse_detected;
                 this.log.info('MOTION SENSOR MotionDetected get', res);
-                callback(true, res);
+                callback(null, res);
             }));
 
             accessory.context.device.on('motion', async() => {
