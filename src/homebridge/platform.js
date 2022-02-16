@@ -41,13 +41,19 @@ export class BrowserCam {
 
         // Torch
         if(device.settings.torch !== null){
-            accessory.addService(this.api.hap.Service.Lightbulb, `Torch`, this.api.hap.uuid.generate('Motion Sensor'), 'torch');
+            accessory.addService(this.api.hap.Service.Lightbulb, `Torch`, this.api.hap.uuid.generate('Torch'), 'torch');
         }
 
+        // Motion detector
         if(this.config.motion_detector.active) {
             accessory.addService(this.api.hap.Service.MotionSensor, 'Motion sensor', this.api.hap.uuid.generate('Motion Sensor'), 'motion');
         }
-        //accessory.addService(this.api.hap.Service.OccupancySensor, 'Noise sensor', this.api.hap.uuid.generate('Noise Sensor'), 'noise')
+
+        // Noise detector
+        if(this.config.noise_detector.active) {
+            accessory.addService(this.api.hap.Service.OccupancySensor, 'Noise sensor', this.api.hap.uuid.generate('Noise Sensor'), 'noise');
+        }
+
         //accessory.addService(this.api.hap.Service, 'Adjust', this.api.hap.uuid.generate('Adjust') , 'adjust')
 
         this.configureAccessory(accessory);
@@ -130,32 +136,34 @@ export class BrowserCam {
 
 
         // NOISE SENSOR
-        /*
-        this.noise_sensor = accessory.getService('Noise sensor');
-        accessory.context.noise_detected = false
-        this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).on("get", (callback => {
-            //this.log.info('OccupancyDetected get', accessory.context.noise_detected);
-            callback(null, accessory.context.noise_detected)
-        }));
+        if(this.config.noise_detector.active){
+            this.noise_sensor = accessory.getService('Noise sensor');
+            accessory.context.noise_detected = false;
+            this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).on("get", (callback => {
+                //this.log.info('OccupancyDetected get', accessory.context.noise_detected);
+                callback(null, accessory.context.noise_detected);
+            }));
 
-        accessory.context.device.on('noise', () => {
-            if(accessory.context.noise_timeout){
-                this.log.info('NOISE SENSOR', 'ClearTimeout')
-                clearTimeout(accessory.context.noise_timeout)
-            }
-            else{
-                this.log.info('NOISE SENSOR', 'updateValue(true)')
-                accessory.context.noise_detected = true
-                this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(true)
-            }
-            accessory.context.noise_timeout = setTimeout(() => {
-                this.log.info('NOISE SENSOR', 'updateValue(false)')
-                accessory.context.noise_detected = true
-                this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(false)
-                accessory.context.noise_timeout = null
-            }, 5000) // On enregistre 5 minutes
-        })
-        */
+            accessory.context.device.on('noise', () => {
+                if(accessory.context.noise_timeout){
+                    //this.log.info('NOISE SENSOR', 'ClearTimeout');
+                    clearTimeout(accessory.context.noise_timeout);
+                }
+                else{
+                    this.log.info('NOISE SENSOR', 'updateValue(true)');
+                    accessory.context.noise_detected = true;
+                    this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(true);
+                }
+                accessory.context.noise_timeout = setTimeout(() => {
+                    this.log.info('NOISE SENSOR', 'updateValue(false)');
+                    accessory.context.noise_detected = true;
+                    this.noise_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(false);
+                    accessory.context.noise_timeout = null;
+                }, this.config.noise_detector.timeout);
+            });
+        }
+
+
         const options = {
             cameraStreamCount: 2,
             delegate: accessory.context.device.camera,

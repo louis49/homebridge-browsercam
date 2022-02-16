@@ -5,8 +5,11 @@ import {Camera} from "../camera/camera.js";
 import {Framer} from "../camera/framer.js";
 import {Streaming} from "./streaming.js";
 import {MotionDetector} from "../sensor/motion.js";
+import {AudioExtractor} from "../camera/audioextractor.js";
 
 import {Webmbufferkeyframe} from "../camera/webmbufferkeyframe.js";
+import {WavDecoder} from "../camera/wavdecoder.js";
+import {Noise} from "../sensor/noise.js";
 
 const prefix = 'homebridge:browsercam-';
 
@@ -85,6 +88,15 @@ export class Device extends EventEmitter{
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 
+        if(this.config.noise_detector.active) {
+            this.log.info('AUDIO EXTRACTOR START');
+            this.wav_decoder = new WavDecoder();
+            this.noise_sensor = new Noise(this.config.noise_detector.threshold);
+            this.noise_sensor.on('noise', ()=>this.emit('noise'));
+            this.audio_extractor = new AudioExtractor(this.wav_decoder);
+            this.wav_decoder.on('audio_frame', this.noise_sensor.append.bind(this.noise_sensor));
+        }
+
     }
 
     torch(value){
@@ -108,6 +120,10 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.motion_detector.copy(buffer);
+        }
+
+        if(this.config.noise_detector.active) {
+            this.audio_extractor.copy(buffer);
         }
     }
 
