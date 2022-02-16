@@ -52,12 +52,12 @@
   },
   "funding": [
     {
-      "type" : "paypal",
-      "url" : "https://www.paypal.com/donate/?hosted_button_id=B8NGNPFGK69BY"
+      "type": "paypal",
+      "url": "https://www.paypal.com/donate/?hosted_button_id=B8NGNPFGK69BY"
     },
     {
-      "type" : "buymeacoffee",
-      "url" : "https://www.buymeacoffee.com/louis49github"
+      "type": "buymeacoffee",
+      "url": "https://www.buymeacoffee.com/louis49github"
     }
   ],
   "type": "module"

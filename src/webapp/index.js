@@ -1,5 +1,6 @@
 import {Client} from "./client.js";
 import {Video} from "./video.js";
+import {Device} from "./device.js";
 
 async function start(){
 
@@ -7,10 +8,19 @@ async function start(){
     let identifier = await video.init();
 
     if(identifier){
+
         let client = new Client(location.hostname,
             parseInt(location.port,10)?parseInt(location.port,10):443,
             10000,
             identifier);
+
+        client.on('pulse_detector', (threshold) => {
+            let device = new Device(threshold);
+            device.on('pulse', () => {
+                //document.getElementById("log").value += `\rOn Pulse ${threshold}`;
+                client.send_message({'pulse':true, 'id':identifier});
+            });
+        });
 
         video.on('settings', (message) => {
             client.send_message(message);

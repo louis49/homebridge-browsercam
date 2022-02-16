@@ -63,6 +63,10 @@ export class Client extends EventEmitter {
                     console.log("Reload");
                     document.location.reload();
                 }
+                else if(json.pulse_detector){
+                    //document.getElementById("log").value += `\rReceive ${JSON.stringify(json)}`;
+                    this.emit('pulse_detector', json.pulse_detector.threshold);
+                }
             }.bind(this));
         }.bind(this));
     }
@@ -78,6 +82,7 @@ export class Client extends EventEmitter {
     }
 
     send_message(message){
+        //document.getElementById("log").value += `\rSending ${JSON.stringify(message)}`;
         let string = JSON.stringify(message);
         console.log(`Sending ${string}`);
         if(this.socket.readyState === this.socket.OPEN){
