@@ -138,6 +138,7 @@ export class BrowserCam {
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
                         accessory.context.device.motion_timeout = null;
+                        // /!\ https://github.com/Supereg/secure-video-specification#43-close
                         accessory.context.device.stop_record();
                     }, this.config.motion_detector.timeout);
                 }
@@ -178,6 +179,8 @@ export class BrowserCam {
                         this.log.info('MOTION SENSOR (NOISE)', 'updateValue(false)');
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
+                        // /!\ https://github.com/Supereg/secure-video-specification#43-close
+                        accessory.context.device.stop_record();
                     }
                 }, this.config.noise_detector.timeout);
             });
@@ -215,6 +218,8 @@ export class BrowserCam {
                         this.log.info('MOTION SENSOR (PULSE)', 'updateValue(false)');
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
+                        // /!\ https://github.com/Supereg/secure-video-specification#43-close
+                        accessory.context.device.stop_record();
                     }
                 }, this.config.pulse_detector.timeout);
             });
