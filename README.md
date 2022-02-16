@@ -37,7 +37,9 @@ sudo npm install -g --unsafe-perm homebridge-browsercam
 * Snapshoting
 * Streaming
 * Recording
-* Motion Sensor (An OpenCV movement detector is running in background)
+* Motion Sensor
+* Noise Sensor
+* Pulse Sensor
 * Torch if present become a light switch
 
 ## Configuration
@@ -48,15 +50,15 @@ replace key.pem and cert.pem in .homebridge/browsercam folder and restart
 
 ### Devices
 
-#### Android :
+* Android : ✓
 The best choice for that project, I personally use an old and crappy Huawei
 
-#### iPhone : 
+* iPhone : ✗
+Not working at this time, I need some extra time to take in charge mp4 format
 You can't have 'torch' option : it will be not presented in HomeKit
 
 #### Laptop :
 Facing Mode is automatically at 'environment' value, but in this case, "user" value is preferred
-
 
 ### Browsers : 
 
