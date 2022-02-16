@@ -190,7 +190,7 @@ export class BrowserCam {
         if(this.config.pulse_detector.active){
             this.pulse_sensor = accessory.getService('Pulse sensor');
             this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).on("get", (callback => {
-                this.log.info('PULSE SENSOR OccupancyDetected get', accessory.context.device.noise_detected);
+                this.log.info('PULSE SENSOR OccupancyDetected get', accessory.context.device.pulse_detected);
                 callback(null, accessory.context.device.pulse_detected);
             }));
 
