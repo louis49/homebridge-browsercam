@@ -195,26 +195,26 @@ export class BrowserCam {
             }));
 
             accessory.context.device.on('pulse', () => {
-                if(accessory.context.pulse_timeout){
+                if(accessory.context.device.pulse_timeout){
                     //this.log.info('NOISE SENSOR', 'ClearTimeout');
-                    clearTimeout(accessory.context.pulse_timeout);
+                    clearTimeout(accessory.context.device.pulse_timeout);
                 }
                 else{
                     this.log.info('PULSE SENSOR', 'updateValue(true)');
-                    accessory.context.pulse_detected = true;
+                    accessory.context.device.pulse_detected = true;
                     this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(true);
-                    if(this.config.pulse_detector.record && !accessory.context.motion_detected && !accessory.context.noise_detected){
+                    if(this.config.pulse_detector.record && !accessory.context.device.motion_detected && !accessory.context.device.noise_detected){
                         this.log.info('MOTION SENSOR (PULSE)', 'updateValue(true)');
                         accessory.context.device.motion_detected = true;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
                     }
                 }
-                accessory.context.pulse_timeout = setTimeout(() => {
+                accessory.context.device.pulse_timeout = setTimeout(() => {
                     this.log.info('PULSE SENSOR', 'updateValue(false)');
-                    accessory.context.pulse_detected = false;
+                    accessory.context.device.pulse_detected = false;
                     this.pulse_sensor.getCharacteristic(this.api.hap.Characteristic.OccupancyDetected).updateValue(false);
-                    accessory.context.pulse_timeout = null;
-                    if(this.config.pulse_detector.record && !accessory.context.motion_detected && !accessory.context.noise_detected){
+                    accessory.context.device.pulse_timeout = null;
+                    if(this.config.pulse_detector.record && !accessory.context.device.motion_detected && !accessory.context.device.noise_detected){
                         this.log.info('MOTION SENSOR (PULSE)', 'updateValue(false)');
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
