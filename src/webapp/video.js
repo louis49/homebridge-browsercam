@@ -68,6 +68,20 @@ export class Video extends EventEmitter {
         }
 
         if(this.stream){
+
+            let mimeTypeMp4 = false;
+            try{
+                mimeTypeMp4 = MediaRecorder.isTypeSupported('video/mp4');
+            }
+            catch (_) {}
+
+            let mimeTypeWebm = false;
+            try{
+                mimeTypeWebm = MediaRecorder.isTypeSupported('video/webm');
+            }
+            catch (_) {}
+
+            let mimeType = mimeTypeWebm?'video/webm':mimeTypeMp4?'video/mp4':null;
             let settings = this.stream.getVideoTracks()[0].getSettings();
             let devices = await navigator.mediaDevices.enumerateDevices();
             let device = devices.find((device) => device.deviceId===settings.deviceId && device.kind === 'videoinput');
@@ -82,9 +96,10 @@ export class Video extends EventEmitter {
                     height:settings.height,
                     width:settings.width,
                     frameRate:settings.frameRate,
-                    torch:(capabilities.torch === undefined)?null:settings.torch
+                    torch:(capabilities.torch === undefined)?null:settings.torch,
+                    mimeType
                 }};
-            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType : 'video/webm'});
+            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType});
             this.mediaRecorder.ondataavailable = this.send_data.bind(this);
             return settings.deviceId;
         }

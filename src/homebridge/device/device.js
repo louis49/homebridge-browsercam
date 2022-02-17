@@ -8,6 +8,7 @@ import {MotionDetector} from "../sensor/motion.js";
 import {AudioExtractor} from "../camera/audioextractor.js";
 
 import {Webmbufferkeyframe} from "../camera/webmbufferkeyframe.js";
+import {Mp4Buffer} from "../camera/mp4buffer.js";
 import {WavDecoder} from "../camera/wavdecoder.js";
 import {Noise} from "../sensor/noise.js";
 
@@ -21,11 +22,7 @@ export class Device extends EventEmitter{
         this.config = config;
         this.id = id;
         this.count = 0;
-        this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer);
-        if(this.config.recording.active){
-            this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer);
-        }
-
+        
         this.pendingSessions = {};
 
         this.random = false;
@@ -41,12 +38,7 @@ export class Device extends EventEmitter{
     }
 
     configure(ws){
-        // En cas de déconnexion, il faut purger tous les buffers car un nouveau header va arriver
         this.log.info('CONFIGURE');
-        this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer);
-        if(this.config.recording.active){
-            this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer);
-        }
 
         for(let sessionID of Object.keys(this.pendingSessions)){
             this.stop_stream(sessionID);
@@ -79,6 +71,25 @@ export class Device extends EventEmitter{
     }
 
     prepare(){
+
+        // En cas de déconnexion, il faut purger tous les buffers car un nouveau header va arriver
+        switch (this.settings.mimeType){
+            case 'video/webm':
+                this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer);
+                if(this.config.recording.active){
+                    this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer);
+                }
+                break;
+            case 'video/mp4':
+                this.streaming_buffer = new Mp4Buffer(this.config.streaming.buffer);
+                if(this.config.recording.active){
+                    this.recording_buffer = new Mp4Buffer(this.config.recording.buffer);
+                }
+                break;
+            default:
+                throw new Error('MimeType not recognized');
+        }
+
         this.camera = new Camera(this.api, this.log, this);
 
         this.log.info('FRAMER START');
