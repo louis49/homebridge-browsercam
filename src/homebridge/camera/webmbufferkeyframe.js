@@ -258,7 +258,6 @@ export class Webmbufferkeyframe {
         let current_cluster = this.findNextBlock(this.buffer, 0);
         let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code);
 
-
         let init_cluster = Object.assign({}, current_cluster);
 
         while( (current_block.time_code - init_cluster.time_code) < this.duration ) {
@@ -290,10 +289,10 @@ export class Webmbufferkeyframe {
 
         writer.write(head);
         writer.write(first_frame);
-        this.tick(writer, current_cluster, 0, current_cluster.time_code, 0);
+        this.tick(writer, current_cluster, current_cluster.start_cursor, current_cluster.time_code, 0);
     }
 
-    tick(writer, current, total, cluster_timecode, time_out){
+    tick(writer, current, cluster_keyframe_start, cluster_timecode, time_out){
         setTimeout(() => {
             let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
 
@@ -306,6 +305,7 @@ export class Webmbufferkeyframe {
 
             if(next.cluster){
                 cluster_timecode =  next.time_code;
+                cluster_keyframe_start = next.start_cursor;
             }
 
             if(this.streaming === false){
@@ -318,25 +318,25 @@ export class Webmbufferkeyframe {
                 if(this.debug) {
                     fs.writeFileSync(this.debug_file, frame, {flag:'a'});
                 }
-                writer.write(frame)
+                writer.write(frame);
             }
 
             // on Nettoie
-            if(next.cluster) {
-                this.buffer = this.buffer.slice(next.start_cursor)
-                next.next_cursor -= next.start_cursor
-                next.start_cursor = 0
-                console.log("CLEANING")
+            if(next.keyframe && next.track_number === this.video_track) {
+                console.log("CLEANING", cluster_keyframe_start);
+                this.buffer = this.buffer.slice(cluster_keyframe_start);
+                next.next_cursor -= cluster_keyframe_start;
+                next.start_cursor -= cluster_keyframe_start;
+
             }
 
             time_out = (next.time_code - current.time_code);
             if(time_out <= 0){
                 time_out = 10;
             }
-            total += time_out;
 
             //console.log('Timeout', time_out, next.track_number, next.time_code, total)
-            this.tick(writer, next, total, cluster_timecode, time_out);
+            this.tick(writer, next, cluster_keyframe_start, cluster_timecode, time_out);
         }, time_out);
     }
 
