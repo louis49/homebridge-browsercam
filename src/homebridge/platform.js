@@ -77,6 +77,18 @@ export class BrowserCam {
             .setCharacteristic(this.api.hap.Characteristic.SerialNumber, accessory.context.device.id)
             .setCharacteristic(this.api.hap.Characteristic.FirmwareRevision, '1.0.0');
 
+        accessory
+            .getService(this.api.hap.Service.AccessoryInformation)
+            .getCharacteristic(this.api.hap.Characteristic.Identify)
+            .onSet((identify) => {
+                this.log.info('Identify', identify);
+            });
+
+        accessory.context.device.on('power', (value) => {
+            console.log("POWERING ", value);
+            accessory.getService(this.api.hap.Service.CameraOperatingMode).setCharacteristic(this.api.hap.Characteristic.ManuallyDisabled, !value);
+        });
+
         this.torchService = accessory.getService(`Torch`);
         if(this.torchService){
             this.torchService.getCharacteristic(this.api.hap.Characteristic.On)
