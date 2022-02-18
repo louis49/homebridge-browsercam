@@ -294,6 +294,11 @@ export class Webmbufferkeyframe {
 
     tick(writer, current, cluster_keyframe_start, cluster_timecode, time_out){
         setTimeout(() => {
+            if(this.streaming === false){
+                console.log("WRITING END STREAMING");
+                writer.end(Buffer.from([]));
+                return;
+            }
             let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
 
             if(!next){
@@ -308,18 +313,11 @@ export class Webmbufferkeyframe {
                 cluster_keyframe_start = next.start_cursor;
             }
 
-            if(this.streaming === false){
-                console.log("WRITING END STREAMING");
-                writer.end(this.buffer.slice(next.start_cursor, next.next_cursor));
-                return;
+            let frame = this.buffer.slice(next.start_cursor, next.next_cursor);
+            if(this.debug) {
+                fs.writeFileSync(this.debug_file, frame, {flag:'a'});
             }
-            else{
-                let frame = this.buffer.slice(next.start_cursor, next.next_cursor);
-                if(this.debug) {
-                    fs.writeFileSync(this.debug_file, frame, {flag:'a'});
-                }
-                writer.write(frame);
-            }
+            writer.write(frame);
 
             // on Nettoie
             if(next.keyframe && next.track_number === this.video_track) {
@@ -327,7 +325,7 @@ export class Webmbufferkeyframe {
                 this.buffer = this.buffer.slice(cluster_keyframe_start);
                 next.next_cursor -= cluster_keyframe_start;
                 next.start_cursor -= cluster_keyframe_start;
-
+                cluster_keyframe_start = 0;
             }
 
             time_out = (next.time_code - current.time_code);
