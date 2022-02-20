@@ -187,6 +187,7 @@ export class Webmbufferkeyframe {
         webmbuffer.head_buffer = Buffer.from(this.head_buffer);
         webmbuffer.buffer = Buffer.from(this.buffer);
         webmbuffer.current_duration = this.current_duration;
+        webmbuffer.video_track = this.video_track;
 
         return webmbuffer;
     }
