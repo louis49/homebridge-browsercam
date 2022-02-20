@@ -9,7 +9,7 @@ export class Mp4Buffer{
         this.current_duration = 0;
         this.buffer = new Buffer.from([]);
         this.streaming = false;
-        this.debug = true;
+        this.debug = false;
     }
 
     append(buffer){
@@ -504,11 +504,20 @@ export class Mp4Buffer{
 
     tick(writer, block){
         setTimeout(() => {
+            if(this.streaming === false){
+                console.log("WRITING END STREAMING");
+                if(writer.writable){
+                    writer.end(Buffer.from([]));
+                }
+                return;
+            }
             block = this.findNextBlock(this.buffer, block.end);
             if(!block || block.end > this.buffer.length){
                 console.log("FLUX END : WRITING END STREAMING");
                 this.streaming = false;
-                writer.end(new Buffer.from([]));
+                if(writer.writable){
+                    writer.end(new Buffer.from([]));
+                }
                 return;
             }
 
@@ -517,7 +526,10 @@ export class Mp4Buffer{
             if(this.debug) {
                 fs.writeFileSync(this.debug_file, frame, {flag:'a'});
             }
-            writer.write(frame);
+            if(writer.writable){
+                writer.write(frame);
+            }
+
             this.tick(writer, block);
         },block.duration*1000/this.time_scale);
         //console.log('timeout :', block.duration, block.duration*1000/this.time_scale);
