@@ -53,8 +53,7 @@ replace key.pem and cert.pem in .homebridge/browsercam folder and restart
 * Android : ✓
 The best choice for that project, I personally use an old and crappy Huawei
 
-* iPhone : ✗
-Not working at this time, I need some extra time to take in charge mp4 format
+* iPhone : ✓
 You can't have 'torch' option : it will be not presented in HomeKit
 
 #### Laptop :
@@ -63,8 +62,7 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
 ### Browsers : 
 
 * Chrome : ✓
-* Safari : ✗ 
-  * Not working at this time, I need some extra time to take in charge mp4 format
+* Safari : ✓
 * Firefox : ? 
   * Not tested
 * IE / Edge : ✗ 
@@ -76,13 +74,22 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
   * port : 443
 * Streaming :
   * buffer : 500 ms
+* Recording
+  * active : true
+  * buffer : 4000 ms
 * Motion Sensor 
   * active : true
   * timeout : 30000 ms
   * threshold : 5%
-* Recording
+* Noise Sensor
   * active : true
-  * buffer : 4000 ms
+  * timeout : 30000 ms
+  * threshold : 30Db
+* Pulse Sensor
+  * active : true
+  * timeout : 30000 ms
+  * threshold : 0.12m/s^2
+
   
 ### Mac M1
 For Homebridge instance on Mac M1, you need to install ffmpeg by following : https://github.com/homebridge/ffmpeg-for-homebridge/issues/30#issuecomment-960181989
