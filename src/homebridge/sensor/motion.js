@@ -12,7 +12,7 @@ export class MotionDetector extends EventEmitter{
         this.width = width;
         this.threshold = threshold;
         this.id = id;
-        this.demo = true;
+        this.demo = false;
 
         let worker_path = path.join(directory, "worker_motion.js");
         this.worker = new Worker(worker_path, {workerData:{height : this.height, width : this.width, demo:this.demo, threshold:this.threshold, id:this.id}, stdin: true});
