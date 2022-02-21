@@ -70,7 +70,7 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.stdout.on('data', (data) => {
-            //console.log(data.toString())
+            //console.log(data.toString());
             if(this.callback){
                 this.callback();
                 this.callback = null;
@@ -78,7 +78,7 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.stderr.on('data', function (data){
-            //console.log(data.toString())
+            //console.log(data.toString());
         }.bind(this));
 
         this.ffmpeg_stream.on('error', (error) => {
