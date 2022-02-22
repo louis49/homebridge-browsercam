@@ -56,7 +56,7 @@ The best choice for that project, I personally use an old and crappy Huawei
 * iPhone : ✓
 You can't have 'torch' option : it will be not presented in HomeKit
 
-#### Laptop :
+* Laptop : ✓
 Facing Mode is automatically at 'environment' value, but in this case, "user" value is preferred
 
 ### Browsers : 
