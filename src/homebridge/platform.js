@@ -85,7 +85,7 @@ export class BrowserCam {
             });
 
         accessory.context.device.on('power', (value) => {
-            console.log("POWERING ", value);
+            this.log.info("POWERING ", value);
             accessory.getService(this.api.hap.Service.CameraOperatingMode).setCharacteristic(this.api.hap.Characteristic.ManuallyDisabled, !value);
         });
 
@@ -146,12 +146,11 @@ export class BrowserCam {
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(true);
                     }
                     accessory.context.device.motion_timeout = setTimeout(() => {
+                        // https://github.com/Supereg/secure-video-specification#43-close
                         this.log.info('MOTION SENSOR', 'updateValue(false)');
                         accessory.context.device.motion_detected = false;
                         this.motion_sensor.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(false);
                         accessory.context.device.motion_timeout = null;
-                        // /!\ https://github.com/Supereg/secure-video-specification#43-close
-                        accessory.context.device.stop_record();
                     }, this.config.motion_detector.timeout);
                 }
             });

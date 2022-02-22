@@ -19,13 +19,18 @@ export class Recording{
 
         this.args.push(...input);
         this.args.push(...video);
-        this.args.push("-fflags",
+        this.args.push(
+            "-fflags",
             "+genpts",
             "-reset_timestamps",
-            "1");
+            "1"
+        );
 
         this.args.push(
-            "-movflags", "frag_keyframe+empty_moov+default_base_moof", "-hide_banner"
+            "-movflags", "frag_keyframe+empty_moov+default_base_moof",
+            "-max_muxing_queue_size", "1024",
+            "-vsync", "cfr",
+            "-hide_banner"
         );
         this.args.push("-f", "mp4");
         this.args.push(...audio);
@@ -40,6 +45,7 @@ export class Recording{
 
     destroy() {
         this.socket?.destroy();
+        this.ffmpeg_process?.removeAllListeners();
         this.ffmpeg_process?.kill();
 
         this.socket = undefined;
@@ -59,7 +65,7 @@ export class Recording{
         const port = this.server.address()["port"];
         this.args.push("tcp://127.0.0.1:" + port);
 
-        //this.log.info('RECORDING', ffmpeg_for_homebridge??"ffmpeg" + " " + this.args.join(" "));
+        this.log.info('RECORDING', ffmpeg_for_homebridge??"ffmpeg" + " " + this.args.join(" "));
 
         this.ffmpeg_process = spawn(ffmpeg_for_homebridge??"ffmpeg", this.args, { env: process.env });
 
@@ -72,7 +78,7 @@ export class Recording{
         });
 
         this.ffmpeg_process.stderr.on('data', (data) => {
-            //this.log.info('RECORDING', data.toString())
+            //this.log.info('RECORDING', data.toString());
         });
 
         this.ffmpeg_process.stdout.on('data', (data) => {

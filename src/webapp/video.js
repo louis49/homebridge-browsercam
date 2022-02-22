@@ -1,15 +1,14 @@
 import EventEmitter from "events";
 
 const resolutions = [
-    {width: 640, height : 360},
-    {width: 4160, height : 3120}, // 4/3 Huawei
-    {width: 4032, height : 3024}, // 4/3 iPhone Max
-    {width: 4032, height : 2268}, // 16/9 iPhone Max
-    {width: 3840, height : 2180},
-    {width: 1920, height : 1080},
-    {width: 1280, height : 720},
-    {width: 640, height : 360},
-    {width: 320, height : 180},
+    {width: 1920, height : 1080, fps : 30},
+    {width: 1920, height : 1080, fps : 20},
+    {width: 1280, height : 720, fps : 30},
+    {width: 1280, height : 720, fps : 20},
+    {width: 640, height : 360, fps : 30},
+    {width: 640, height : 360, fps : 20},
+    {width: 320, height : 180, fps : 30},
+    {width: 320, height : 180, fps : 20},
 ];
 
 export class Video extends EventEmitter {
@@ -22,7 +21,7 @@ export class Video extends EventEmitter {
     async init() {
         console.log("VIDEO INIT");
 
-        if(!MediaRecorder.isTypeSupported('video/webm')){
+        if(!MediaRecorder.isTypeSupported('video/webm') && !MediaRecorder.isTypeSupported('video/mp4')){
             console.error("Unsuppported Browser (for now)");
             document.body.style.backgroundColor = "#B93129";
 
@@ -36,13 +35,13 @@ export class Video extends EventEmitter {
             video: {
                 facingMode: 'environment',
                 width: {
-                    ideal: 10000 * 16/9 // iPhone : 4032
+                    ideal: 10000 * 16/9
                 },
                 height: {
-                    ideal: 10000 // iPhone : 2268
+                    ideal: 10000
                 },
                 frameRate: {
-                    ideal: 25
+                    ideal: 30
                 },
                 aspectRatio: {
                     exact : 16/9
@@ -55,6 +54,7 @@ export class Video extends EventEmitter {
             console.log('Trying ', res);
             constraints.video.height.ideal = res.height;
             constraints.video.width.ideal = res.width;
+            constraints.video.frameRate.ideal = res.fps;
             let current_stream;
             try{
                 current_stream = await navigator.mediaDevices.getUserMedia(constraints);

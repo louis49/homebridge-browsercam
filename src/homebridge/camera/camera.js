@@ -109,7 +109,7 @@ export class Camera{
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#updateRecordingConfiguration
     updateRecordingConfiguration(configuration){
         this.configuration = configuration;
-        this.log.info('updateRecordingConfiguration', configuration);
+        this.log.info('updateRecordingConfiguration');
     }
 
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#handleRecordingStreamRequest
@@ -145,22 +145,21 @@ export class Camera{
         }
 
         const video = [
-//            "-an",
-//            "-sn",
-//            "-dn",
             "-codec:v",
             "libx264",
+            "-preset:v", "ultrafast", //https://trac.ffmpeg.org/wiki/Encode/H.264
+            "-tune", "zerolatency",
             "-pix_fmt",
             "yuv420p",
             "-profile:v", profile,
             "-level:v", level,
-            "-b:v", `${this.configuration.videoCodec.parameters.bitRate}k`,
-            //"-vf",
-            //`framerate=fps=25,scale=w=${this.configuration.videoCodec.resolution[0]}:h=${this.configuration.videoCodec.resolution[1]}:force_original_aspect_ratio=1,pad=${this.configuration.videoCodec.resolution[0]}:${this.configuration.videoCodec.resolution[1]}:(ow-iw)/2:(oh-ih)/2`,
+            "-b:v", `${this.configuration.videoCodec.parameters.bitRate}k`, // 2048 ???
+            "-minrate:v", `${this.configuration.videoCodec.parameters.bitRate}k`, // ??
+            "-maxrate:v", `${this.configuration.videoCodec.parameters.bitRate}k`, // ??
+            "-bufsize", "1835k",
             "-force_key_frames", `expr:eq(t,n_forced*${this.configuration.videoCodec.parameters.iFrameInterval / 1000})`,
             "-r", this.configuration.videoCodec.resolution[2].toString(),
         ];
-        // https://github.com/seydx/homebridge-camera-ui/blob/eb00a33155f2d5c107cd21d53ba645f309bc5aca/src/services/recording.service.js#L168
         // https://github.com/homebridge/HAP-NodeJS/blob/00d8a11b92f3812302c7b23303139f82fd7f9b97/src/accessories/Camera_accessory.ts#L350
 
         let samplerate = "";
@@ -192,6 +191,7 @@ export class Camera{
             ...(this.configuration.audioCodec.type === this.api.hap.AudioRecordingCodecType.AAC_LC ?
                 ["-profile:a", "aac_low"] :
                 ["-profile:a", "aac_eld"]),
+            "-flags", "+global_header",
             "-ar", `${samplerate}k`,
             "-b:a", `${this.configuration.audioCodec.bitrate}k`,
             "-ac", `${this.configuration.audioCodec.audioChannels}`,

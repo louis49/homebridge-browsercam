@@ -2,7 +2,8 @@ import fs from "fs";
 import {spawn} from "child_process";
 
 export class Webmbufferkeyframe {
-    constructor(duration) {
+    constructor(duration, log) {
+        this.log = log;
         this.duration = duration;
         this.current_duration = 0;
         this.buffer = new Buffer.from([]);
@@ -20,7 +21,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0xa3)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Main Head", cursor, cursor + size.value + size.length + 4);
+                this.log.debug("Found Main Head", cursor, cursor + size.value + size.length + 4);
                 cursor += size.value + size.length + 4;
             }
             //SEGMENT
@@ -31,7 +32,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0x67)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Segment", cursor, cursor + size.value + size.length + 4);
+                this.log.debug("Found Segment", cursor, cursor + size.value + size.length + 4);
                 cursor += size.value + size.length + 4;
             }
             // INFO
@@ -42,7 +43,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0x66)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Info", cursor, cursor + size.value + size.length + 4);
+                this.log.debug("Found Info", cursor, cursor + size.value + size.length + 4);
                 cursor += size.value + size.length + 4;
             }
             // TRACKS
@@ -53,7 +54,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0x6b)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Tracks", cursor, cursor + size.value + size.length + 4);
+                this.log.debug("Found Tracks", cursor, cursor + size.value + size.length + 4);
                 this.parseTracks(buffer, cursor + size.length + 4, size.value);
                 cursor += size.value + size.length + 4;
             }
@@ -65,13 +66,12 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0x75)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
+                this.log.debug("Found Cluster", cursor, cursor + size.value + size.length + 4);
                 //cursor += size.value + size.length + 4
                 return cursor;
             }
             else{
-                let k = buffer.slice(cursor, cursor+4).toString('hex');
-                console.log(k);
+                this.log.error.log(buffer.slice(cursor, cursor+4).toString('hex'));
             }
         }
     }
@@ -83,7 +83,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor] === 0xae)
             ) {
                 let size = this.readSize(buffer, cursor + 1);
-                //console.log("Found Track", cursor, cursor + size.value + size.length + 1)
+                this.log.info("Found Track", cursor, cursor + size.value + size.length + 1);
                 this.parseTrackEntry(buffer, cursor + size.length + 1, size.value);
                 cursor += size.value + size.length + 1;
             }
@@ -100,7 +100,7 @@ export class Webmbufferkeyframe {
             ){
                 let size = this.readSize(buffer, cursor + 1);
                 track_number = buffer.readUIntBE(cursor+1 + size.length, size.value);
-                //console.log("   Found Track Number", cursor, cursor + size.value + size.length + 1)
+                this.log.debug("   Found Track Number", cursor, cursor + size.value + size.length + 1);
                 cursor += size.value + size.length + 1;
             }
             //TrackUID
@@ -109,7 +109,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+1] === 0xc5)
             ) {
                 let size = this.readSize(buffer, cursor + 2);
-                //console.log("   Found Track UID", cursor, cursor + size.value + size.length + 2)
+                this.log.debug("   Found Track UID", cursor, cursor + size.value + size.length + 2);
                 cursor += size.value + size.length + 2;
             }
             // TRACK TYPE
@@ -124,7 +124,7 @@ export class Webmbufferkeyframe {
                 else if(track_type === 2){
                     this.audio_track = track_number;
                 }
-                //console.log("   Found Track Type", cursor, cursor + size.value + size.length + 1)
+                this.log.debug("   Found Track Type", cursor, cursor + size.value + size.length + 1);
                 cursor += size.value + size.length + 1;
             }
             // CODECID
@@ -132,7 +132,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor] === 0x86)
             ){
                 let size = this.readSize(buffer, cursor + 1);
-                //console.log("   Found Codec ID", cursor, cursor + size.value + size.length + 1)
+                this.log.debug("   Found Codec ID", cursor, cursor + size.value + size.length + 1);
                 cursor += size.value + size.length + 1;
             }
             // TRACK VIDEO
@@ -140,7 +140,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor] === 0xe0)
             ){
                 let size = this.readSize(buffer, cursor + 1);
-                //console.log("   Found TrackVideo", cursor, cursor + size.value + size.length + 1)
+                this.log.debug("   Found TrackVideo", cursor, cursor + size.value + size.length + 1);
                 //this.parseTrackVideo(buffer, cursor + size.length + 1, size.value)
                 cursor += size.value + size.length + 1;
             }
@@ -149,7 +149,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor] === 0xe1)
             ){
                 let size = this.readSize(buffer, cursor + 1);
-                //console.log("   Found Track Audio", cursor, cursor + size.value + size.length + 1)
+                this.log.debug("   Found Track Audio", cursor, cursor + size.value + size.length + 1);
                 cursor += size.value + size.length + 1;
             }
             // CodecPrivate
@@ -158,7 +158,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+1] === 0xa2)
             ){
                 let size = this.readSize(buffer, cursor + 2);
-                //console.log("   Found Codec Private", cursor, cursor + size.value + size.length + 2)
+                this.log.debug("   Found Codec Private", cursor, cursor + size.value + size.length + 2);
                 cursor += size.value + size.length + 2;
             }
             //MaxBlockAdditionID
@@ -167,13 +167,12 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+1] === 0xee)
             ){
                 let size = this.readSize(buffer, cursor + 2);
-                //console.log("   Found MaxBlockAdditionID", cursor, cursor + size.value + size.length + 2)
+                this.log.debug("   Found MaxBlockAdditionID", cursor, cursor + size.value + size.length + 2);
                 cursor += size.value + size.length + 2;
             }
             else
             {
-                let k = buffer.slice(cursor,cursor+4).toString('hex');
-                console.log(k);
+                this.log.error(buffer.slice(cursor,cursor+4).toString('hex'));
                 break;
             }
         }
@@ -181,8 +180,7 @@ export class Webmbufferkeyframe {
 
 
     clone(){
-        let webmbuffer = new Webmbufferkeyframe(this.duration);
-
+        let webmbuffer = new Webmbufferkeyframe(this.duration, this.log);
         webmbuffer.streaming = false;
         webmbuffer.head_buffer = Buffer.from(this.head_buffer);
         webmbuffer.buffer = Buffer.from(this.buffer);
@@ -238,31 +236,90 @@ export class Webmbufferkeyframe {
 
             if(current_cluster_keyframe.start_cursor !== 0){
                 this.buffer=this.buffer.slice(current_cluster_keyframe.start_cursor);
-                //console.log("Nouvelle durée KeyFrame :", last_block.time_code - current_cluster_keyframe.time_code, this.buffer.length)
                 this.current_duration = (last_block.time_code) - (current_cluster_keyframe.time_code);
             }
-            else{
-                //console.log("Current Duration :", last_block.time_code - current_cluster_keyframe.time_code)
+        }
+    }
+
+    map(buffer){
+        let buffer_map = [];
+        let cursor = 0;
+        let cluster = this.findNextBlock(buffer, cursor, 0);
+        cursor += cluster.next_cursor;
+        buffer_map.push(cluster);
+        while(cursor < buffer.length){
+            let block = this.findNextBlock(buffer, cursor, cluster.time_code);
+
+            if(!block){
+                break;
             }
+
+            if(block.cluster){
+                cluster = block;
+            }
+            buffer_map.push(block);
+            cursor = block.next_cursor;
+        }
+
+        let current_block;
+        let duration = 0;
+
+        for(let block of buffer_map){
+            if(current_block){
+                let diff = block.time_code - current_block.time_code;
+
+                if(block.cluster){
+                    this.log.info("CLUSTER", block.time_code, diff);
+                }
+                else{
+                    this.log.info("BLOCK", block.track_number===this.video_track?"VIDEO":"AUDIO", (block.keyframe && block.track_number===this.video_track)?"KEYFRAME":"",block.time_code, diff);
+                }
+                duration += diff;
+            }
+            else{
+                if(block.cluster){
+                    this.log.info("CLUSTER", block.time_code, 0);
+                }
+                else{
+                    this.log.info("BLOCK", block.track_number===this.video_track?"VIDEO": "AUDIO", (block.keyframe && block.track_number===this.video_track)?"KEYFRAME":"", block.time_code, 0);
+                }
+            }
+            current_block = block;
         }
     }
 
     consume(writer){
         this.streaming = true;
-        console.log("START STREAMING");
+        this.log.info("START STREAMING");
 
         if(this.debug) {
             this.debug_file = "debug-" + new Date().getTime() + ".webm";
-            console.log("Debug file will be", this.debug_file);
+            this.log.debug("Debug file will be", this.debug_file);
         }
 
         let current_cluster = this.findNextBlock(this.buffer, 0);
         let current_block = this.findNextBlock(this.buffer, current_cluster.next_cursor, current_cluster.time_code);
 
+        if(current_block.keyframe === true && current_block.track_number === this.video_track){
+            this.log.debug("SENDING FIRST A VIDEO FRAME");
+        }
+        if(current_block.keyframe === true && current_block.track_number !== this.video_track){
+            this.log.debug("SENDING FIRST AN AUDIO FRAME");
+        }
+
+
         let init_cluster = Object.assign({}, current_cluster);
 
+        let index = 0;
         while( (current_block.time_code - init_cluster.time_code) < this.duration ) {
             let block = this.findNextBlock(this.buffer, current_block.next_cursor, current_cluster.time_code);
+
+            if(index === 0 && block.keyframe === true && block.track_number === this.video_track){
+                this.log.debug("SENDING 2ND A VIDEO FRAME");
+            }
+            else  if(index === 0 && block.keyframe === true && block.track_number !== this.video_track){
+                this.log.debug("SENDING 2ND AN AUDIO FRAME");
+            }
 
             if(!block){
                 break;
@@ -276,9 +333,10 @@ export class Webmbufferkeyframe {
             else {
                 break;
             }
+            index++;
         }
 
-        console.log("Sending", (current_block.time_code - init_cluster.time_code), "Reste:", this.buffer.length - current_block.start_cursor);
+        this.log.debug("Sending", (current_block.time_code - init_cluster.time_code), "Rest length:", this.buffer.length - current_block.start_cursor);
 
         let head = this.head_buffer;
         let first_frame = this.buffer.slice(current_cluster.start_cursor, current_cluster.next_cursor);
@@ -296,14 +354,14 @@ export class Webmbufferkeyframe {
     tick(writer, current, cluster_keyframe_start, cluster_timecode, time_out){
         setTimeout(() => {
             if(this.streaming === false){
-                console.log("WRITING END STREAMING");
+                this.log.debug("WRITING END STREAMING");
                 writer.end(Buffer.from([]));
                 return;
             }
             let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
 
             if(!next){
-                console.log("FLUX END : WRITING END STREAMING");
+                this.log.debug("FLUX END : WRITING END STREAMING");
                 this.streaming = false;
                 writer.end(new Buffer.from([]));
                 return;
@@ -322,7 +380,7 @@ export class Webmbufferkeyframe {
 
             // on Nettoie
             if(next.keyframe && next.track_number === this.video_track) {
-                console.log("CLEANING", cluster_keyframe_start);
+                this.log.debug("CLEANING", cluster_keyframe_start);
                 this.buffer = this.buffer.slice(cluster_keyframe_start);
                 next.next_cursor -= cluster_keyframe_start;
                 next.start_cursor -= cluster_keyframe_start;
@@ -330,7 +388,7 @@ export class Webmbufferkeyframe {
             }
 
             time_out = (next.time_code - current.time_code);
-            if(time_out <= 0){
+            if(time_out < 0){
                 time_out = 10;
             }
 
@@ -340,7 +398,7 @@ export class Webmbufferkeyframe {
     }
 
     stop(){
-        console.log("STOP STREAMING : this.streaming = false");
+        this.log.info("STOP STREAMING : this.streaming = false");
         this.streaming = false;
     }
 
@@ -379,10 +437,13 @@ export class Webmbufferkeyframe {
             ){
                 let start_cursor = cursor;
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
+                this.log.debug("Found Cluster", cursor, cursor + size.value + size.length + 4);
                 let cluster_cursor = cursor + size.value + size.length + 4;
                 cursor += size.length + 4; // size.length
                 let time_code = this.readClusterTimeCode(buffer, cursor);
+                if(time_code === undefined || time_code === null){
+                    this.log.error("Void Time Code", size.length);
+                }
                 return {start_cursor, next_cursor : time_code.next_cursor, time_code : time_code.time_code, cluster:true};
             }
             else if(
@@ -395,7 +456,7 @@ export class Webmbufferkeyframe {
                 let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2);
 
                 let start_cursor = cursor;
-                //console.log("Found Block", cursor, size.value + size.length + 1, time_code_cluster+time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe")
+                this.log.debug("Found Block", cursor, size.value + size.length + 1, time_code_cluster+time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe");
                 cursor += size.value + size.length + 1;
 
 
@@ -403,7 +464,7 @@ export class Webmbufferkeyframe {
 
             }
             else{
-                console.log(buffer.slice(cursor, cursor+4).toString('hex'));
+                this.log.error(buffer.slice(cursor, cursor+4).toString('hex'));
             }
         }
     }
@@ -413,6 +474,7 @@ export class Webmbufferkeyframe {
         let current_timecode = 0;
         let count = 0;
         while (cursor < buffer.length - 8){
+            // Cluster
             if(
                 (buffer[cursor] === 0x1f) &&
                 (buffer[cursor+1] === 0x43) &&
@@ -420,13 +482,13 @@ export class Webmbufferkeyframe {
                 (buffer[cursor+3] === 0x75)
             ){
                 let size = this.readSize(buffer, cursor + 4);
-                //console.log("Found Cluster", cursor, cursor + size.value + size.length + 4)
                 cursor += size.length + 4;
                 let time_code = this.readClusterTimeCode(buffer, cursor);
                 cluster_time_code = time_code.time_code;
-                console.log("Found Cluster",  cursor-size.length - 4, size.value + (cursor - size.length - 4), time_code.time_code);
+                this.log.debug("Found Cluster",  cursor-size.length - 4, size.value + (cursor - size.length - 4), time_code.time_code);
                 cursor = time_code.next_cursor;
             }
+            // Block
             else if(
                 (buffer[cursor] === 0xa3)
             ){
@@ -434,15 +496,13 @@ export class Webmbufferkeyframe {
                 let track_number = this.readSize(buffer, cursor+size.length+1);
                 let time_code = buffer.readInt16BE(cursor+track_number.length+size.length+1);
                 let keyframe = buffer.readUInt8(cursor+track_number.length+size.length+1+2);
-                //if(track_number.value === this.video_track && (keyframe >= 0b1)){//
-                console.log("Found Block", cursor, cursor + size.value + size.length + 1, time_code + cluster_time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe");
+                this.log.debug("Found Block", cursor, cursor + size.value + size.length + 1, time_code + cluster_time_code, (track_number.value === this.video_track)?"video":"audio", (keyframe >= 0b1)?"Keyframe":"Not Keyframe");
                 current_timecode = time_code + cluster_time_code;
                 count ++;
-                //}
                 cursor += size.value + size.length + 1;
             }
             else{
-                console.log(buffer.slice(cursor, cursor+4).toString('hex'));
+                this.log.error(buffer.slice(cursor, cursor+4).toString('hex'));
             }
         }
         return cursor;
@@ -453,8 +513,15 @@ export class Webmbufferkeyframe {
             (buffer[cursor] === 0xe7)
         ){
             let size = this.readSize(buffer, cursor + 1);
+            // TODO : size.value may be 0 ???
+            if(size.value === 0){
+                this.log.error(buffer.slice(cursor-10, cursor+10).toString('hex'));
+            }
             let time_code = buffer.readUIntBE(cursor + 1 + size.length, size.value);
-            //console.log("    Found TimeCode", time_code, cursor, size.value + size.length + 1)
+            if(time_code === undefined || time_code === null){
+                this.log.error(size.length);
+            }
+            this.log.debug("    Found TimeCode", time_code, cursor, size.value + size.length + 1);
             return {time_code, next_cursor:cursor+size.length+size.value+1};
         }
     }

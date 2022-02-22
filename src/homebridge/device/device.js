@@ -76,9 +76,9 @@ export class Device extends EventEmitter{
         // En cas de déconnexion, il faut purger tous les buffers car un nouveau header va arriver
         switch (this.settings.mimeType){
             case 'video/webm':
-                this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer);
+                this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer, this.log);
                 if(this.config.recording.active){
-                    this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer);
+                    this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer, this.log);
                 }
                 break;
             case 'video/mp4':
