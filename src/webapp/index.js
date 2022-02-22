@@ -4,7 +4,7 @@ import {Device} from "./device.js";
 
 async function start(){
 
-    let video = new Video(100);
+    let video = new Video(150);
     let identifier = await video.init();
 
     if(identifier){

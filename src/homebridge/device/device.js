@@ -22,6 +22,16 @@ export class Device extends EventEmitter{
         this.config = config;
         this.id = id;
         this.count = 0;
+        this.debug = false;
+
+        if(this.debug) {
+            this.debug_file = "debug-" + id + ".webm";
+            this.log.debug("Debug file will be", this.debug_file);
+            try{
+                fs.rmSync(this.debug_file);
+            }
+            catch (e){}
+        }
 
         this.pendingSessions = {};
 
@@ -119,6 +129,11 @@ export class Device extends EventEmitter{
     }
 
     data(buffer){
+
+        if(this.debug) {
+            fs.writeFileSync(this.debug_file, buffer, {flag: 'a'});
+        }
+
         this.framer.copy(buffer);
 
         this.streaming_buffer.append(buffer);

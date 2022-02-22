@@ -1,14 +1,16 @@
 import EventEmitter from "events";
 
 const resolutions = [
-    /*{width: 1920, height : 1080, fps : 30},
-    {width: 1920, height : 1080, fps : 20},*/
-    {width: 1280, height : 720, fps : 30},
-    {width: 1280, height : 720, fps : 20},
-    {width: 640, height : 360, fps : 30},
-    {width: 640, height : 360, fps : 20},
-    {width: 320, height : 180, fps : 30},
-    {width: 320, height : 180, fps : 20},
+    {width: 1920, height : 1080, fps : 30, bps : 8000000},
+    {width: 1920, height : 1080, fps : 20, bps : 5500000},
+    {width: 1280, height : 720, fps : 30, bps : 4000000},
+    {width: 1280, height : 720, fps : 20, bps : 2750000},
+    {width: 720, height : 480, fps : 30, bps : 2000000},
+    {width: 720, height : 480, fps : 20, bps : 1375000},
+    {width: 480, height : 360, fps : 30, bps : 1000000},
+    {width: 480, height : 360, fps : 20, bps : 687500},
+    {width: 320, height : 240, fps : 30, bps : 500000},
+    {width: 320, height : 240, fps : 20, bps : 343750},
 ];
 
 export class Video extends EventEmitter {
@@ -50,6 +52,7 @@ export class Video extends EventEmitter {
             audio: true
         };
 
+        let bps = 2500000;
         for(let res of resolutions){
             console.log('Trying ', res);
             constraints.video.height.ideal = res.height;
@@ -63,6 +66,7 @@ export class Video extends EventEmitter {
 
             if(current_stream){
                 this.stream = current_stream;
+                bps = res.bps;
                 break;
             }
         }
@@ -99,7 +103,11 @@ export class Video extends EventEmitter {
                     torch:(capabilities.torch === undefined)?null:settings.torch,
                     mimeType
                 }};
-            this.mediaRecorder = new MediaRecorder(this.stream, {mimeType});
+            this.mediaRecorder = new MediaRecorder(this.stream, {
+                mimeType,
+                audioBitsPerSecond : 128000,
+                videoBitsPerSecond : bps
+            });
             this.mediaRecorder.ondataavailable = this.send_data.bind(this);
             return settings.deviceId;
         }
