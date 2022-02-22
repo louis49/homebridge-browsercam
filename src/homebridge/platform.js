@@ -85,7 +85,7 @@ export class BrowserCam {
             });
 
         accessory.context.device.on('power', (value) => {
-            this.log.info("POWERING ", value);
+            this.log.info("POWERED", value);
             accessory.getService(this.api.hap.Service.CameraOperatingMode).setCharacteristic(this.api.hap.Characteristic.ManuallyDisabled, !value);
         });
 

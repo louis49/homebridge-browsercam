@@ -4,7 +4,8 @@
 import fs from "fs";
 
 export class Mp4Buffer{
-    constructor(duration) {
+    constructor(duration, log) {
+        this.log = log;
         this.duration = duration;
         this.current_duration = 0;
         this.buffer = new Buffer.from([]);
@@ -14,7 +15,6 @@ export class Mp4Buffer{
 
     append(buffer){
 
-        //console.log("append", buffer.length);
         this.buffer = Buffer.concat([this.buffer, buffer]);
 
         if(this.buffer.length > 1000){
@@ -40,23 +40,19 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'ftyp':
-                    //console.log(type, data.length);
                     break;
                 case 'moov':
-                    //console.log(type, data.length);
                     this.parseMoov(data);
                     break;
                 case 'moof':
-                    //console.log(type, data.length);
                     return start_cursor;
                 case 'mdat':
-                    //console.log(type, data.length);
                     return start_cursor;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -72,14 +68,13 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'mvhd':
-                    //console.log(type, data.length);
+
                     this.time_scale = this.parseMvHd(data);
                     break;
                 case 'trak':
-                    //console.log(type, data.length);
                     let track = this.parseTrak(data);
                     if(track.track_type === 'vide'){
                         this.video_track = track.track_id;
@@ -89,10 +84,9 @@ export class Mp4Buffer{
                     }
                     break;
                 case 'mvex':
-                    //console.log(type, data.length);
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -132,18 +126,16 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'tkhd':
-                    //console.log(type, data.length);
                     track_id = this.parseTkhd(data);
                     break;
                 case 'mdia':
-                    //console.log(type, data.length);
                     track_type = this.parseMdia(data);
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -182,20 +174,17 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'mdhd':
-                    //console.log(type, data.length);
                     break;
                 case 'hdlr':
-                    //console.log(type, data.length);
                     track_type = this.parseHdlr(data);
                     break;
                 case 'minf':
-                    //console.log(type, data.length);
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -235,7 +224,7 @@ export class Mp4Buffer{
             let block = blocks[index];
             duration += block.duration;
             if(duration > (this.duration * (this.time_scale/1000))){
-                console.log('Sending', duration);
+                this.log.debug('Sending', duration);
                 return block;
             }
         }
@@ -261,10 +250,9 @@ export class Mp4Buffer{
         for(let index=blocks.length-1; index >=0 ; index--){
             let block = blocks[index];
             duration += block.duration;
-            //console.log(duration, block.keyframe);
             if(duration > ((this.duration)* (this.time_scale/1000)) && block.keyframe){
                 this.current_duration = (duration * 1000 / this.time_scale);
-                //console.log('Reduce to', this.current_duration);
+                this.log.debug('Reduce to', this.current_duration);
                 return block;
             }
         }
@@ -291,21 +279,20 @@ export class Mp4Buffer{
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
 
+            this.log.debug(type, data.length);
+
             switch (type){
                 case 'moof':
-                    //console.log(type, data.length);
                     moof = this.parseMoof(data);
                     moof.start = start_cursor;
                     moof.end = start_cursor + length + 8;
                     break;
                 case 'mdat':
-                    //console.log(type, data.length);
                     moof.end += length + 8;
                     return moof;
-                    //console.log(type, data.length);
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -316,6 +303,7 @@ export class Mp4Buffer{
     parseMoof(buffer) {
         let cursor = 0;
         let video_traf;
+        let trafs = [];
         while (cursor < buffer.length){
             let start_cursor = cursor;
             const header = buffer.slice(cursor,cursor+=8);
@@ -323,23 +311,25 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'mfhd':
-                    //console.log(type, data.length);
                     break;
                 case 'traf':
-                    //console.log(type, data.length);
                     let traf = this.parseTraf(data);
+                    trafs.push(traf);
                     if(traf.track_id === this.video_track){
                         video_traf = traf;
                     }
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
 
+        }
+        if(video_traf === undefined){
+            this.log.error('To check');
         }
         return video_traf;
     }
@@ -358,17 +348,14 @@ export class Mp4Buffer{
             const offset = header.readUIntBE(0, 4);
             const type = header.slice(4).toString();
             const data = buffer.slice(cursor, cursor+=length);
-
+            this.log.debug(type, data.length);
             switch (type){
                 case 'tfhd':
-                    //console.log(type, data.length);
                     track_id = this.parseTfhd(data);
                     break;
                 case 'tfdt':
-                    //console.log(type, data.length);
                     break;
                 case 'trun':
-                    //console.log(type, data.length);
                     let trun = this.parseTrun(data);
                     duration += trun.duration;
                     if(trun.keyframe){
@@ -376,7 +363,7 @@ export class Mp4Buffer{
                     }
                     break;
                 default:
-                    console.log("To analyze : ", type, data.length);
+                    this.log.debug("To analyze : ", type, data.length);
                     break;
             }
         }
@@ -466,7 +453,7 @@ export class Mp4Buffer{
     }
 
     clone(){
-        let mp4buffer = new Mp4Buffer(this.duration);
+        let mp4buffer = new Mp4Buffer(this.duration, this.log);
 
         mp4buffer.streaming = false;
         mp4buffer.head_buffer = Buffer.from(this.head_buffer);
@@ -480,11 +467,11 @@ export class Mp4Buffer{
 
     consume(writer){
         this.streaming = true;
-        console.log("START STREAMING");
+        this.log.info("START STREAMING");
 
         if(this.debug) {
             this.debug_file = "debug-" + new Date().getTime() + ".mp4";
-            console.log("Debug file will be", this.debug_file);
+            this.log.debug("Debug file will be", this.debug_file);
         }
 
         let block = this.findFirstBlocks(this.buffer, 0);
@@ -505,7 +492,7 @@ export class Mp4Buffer{
     tick(writer, block){
         setTimeout(() => {
             if(this.streaming === false){
-                console.log("WRITING END STREAMING");
+                this.log.info("WRITING END STREAMING");
                 if(writer.writable){
                     writer.end(Buffer.from([]));
                 }
@@ -513,7 +500,7 @@ export class Mp4Buffer{
             }
             block = this.findNextBlock(this.buffer, block.end);
             if(!block || block.end > this.buffer.length){
-                console.log("FLUX END : WRITING END STREAMING");
+                this.log.info("FLUX END : WRITING END STREAMING");
                 this.streaming = false;
                 if(writer.writable){
                     writer.end(new Buffer.from([]));
@@ -532,11 +519,10 @@ export class Mp4Buffer{
 
             this.tick(writer, block);
         },block.duration*1000/this.time_scale);
-        //console.log('timeout :', block.duration, block.duration*1000/this.time_scale);
     }
 
     stop(){
-        console.log("STOP STREAMING : this.streaming = false");
+        this.log.info("STOP STREAMING : this.streaming = false");
         this.streaming = false;
     }
 }

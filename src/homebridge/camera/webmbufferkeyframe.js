@@ -83,7 +83,7 @@ export class Webmbufferkeyframe {
                 (buffer[cursor] === 0xae)
             ) {
                 let size = this.readSize(buffer, cursor + 1);
-                this.log.info("Found Track", cursor, cursor + size.value + size.length + 1);
+                this.log.debug("Found Track", cursor, cursor + size.value + size.length + 1);
                 this.parseTrackEntry(buffer, cursor + size.length + 1, size.value);
                 cursor += size.value + size.length + 1;
             }
@@ -388,11 +388,8 @@ export class Webmbufferkeyframe {
             }
 
             time_out = (next.time_code - current.time_code);
-            if(time_out < 0){
-                time_out = 10;
-            }
 
-            //console.log('Timeout', time_out, next.track_number, next.time_code, total)
+            this.log.debug('Timeout', time_out, next.track_number, next.time_code);
             this.tick(writer, next, cluster_keyframe_start, cluster_timecode, time_out);
         }, time_out);
     }

@@ -3,9 +3,10 @@ import {spawn} from "child_process";
 import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
 
 export class Streaming{
-    constructor(api, sessionInfo, request, callback) {
+    constructor(api, log, sessionInfo, request, callback) {
 
         this.api = api;
+        this.log = log;
         this.running = true;
         this.callback = callback;
 
@@ -66,11 +67,11 @@ export class Streaming{
         this.ffmpeg_stream = spawn(ffmpeg_for_homebridge??"ffmpeg", ffmpegArgs.split(/\s+/), {env: process.env});
 
         this.ffmpeg_stream.stdin.on('error',  (e) => {
-            console.log(e);
+            this.log.error(e);
         });
 
         this.ffmpeg_stream.stdout.on('data', (data) => {
-            //console.log(data.toString());
+            this.log.debug(data.toString());
             if(this.callback){
                 this.callback();
                 this.callback = null;
@@ -78,15 +79,15 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.stderr.on('data', function (data){
-            //console.log(data.toString());
+            this.log.debug(data.toString());
         }.bind(this));
 
         this.ffmpeg_stream.on('error', (error) => {
-            console.log('STREAMING : ', error);
+            this.log.error('STREAMING : ', error);
         });
 
         this.ffmpeg_stream.on('close', () => {
-            console.log('STREAMING : Closing ffmpeg');
+            this.log.debug('STREAMING : Closing ffmpeg');
         });
 
         if(this.callback){

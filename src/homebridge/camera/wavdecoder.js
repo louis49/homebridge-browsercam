@@ -1,14 +1,14 @@
 import EventEmitter from "events";
 
 export class WavDecoder extends EventEmitter {
-    constructor() {
+    constructor(log) {
         super();
+        this.log = log;
         this.buffer = Buffer.from([]);
         this.cursor = 0;
         this.head = false;
         this.remain = 0;
         this.count = 0;
-
     }
 
     append(buffer){
@@ -38,7 +38,7 @@ export class WavDecoder extends EventEmitter {
             if(this.remain === 0){
                 let chunk_type = this.buffer.slice(this.cursor, this.cursor+=4).toString('utf-8');
                 if(chunk_type !== 'data'){
-                    console.error("ERROR");
+                    this.log.error("ERROR", "chunk_type is not 'data'");
                 }
                 this.chunk_size = this.buffer.readUIntLE(this.cursor, 4);this.cursor += 4;
                 this.remain = this.chunk_size;
@@ -52,7 +52,7 @@ export class WavDecoder extends EventEmitter {
         }
         this.count+=array.length;
         if(array.length>0){
-            //console.log("Publish new Audio Array", array.length);
+            this.log.debug("Publish new Audio Array", array.length);
             this.emit('audio_frame', array);
         }
     }
@@ -66,8 +66,7 @@ export class WavDecoder extends EventEmitter {
         }
 
         // ChunkSize
-        let file_length = buffer.readUIntLE(cursor, 4);cursor+=4; // ffffffff - Int32_MAX
-        //console.log(buffer.slice(cursor, cursor+4).toString('hex'))
+        let file_length = buffer.readUIntLE(cursor, 4);cursor+=4;
 
         // Format
         if(buffer.slice(cursor, cursor += 4).toString('utf-8') !== 'WAVE'){
@@ -80,7 +79,6 @@ export class WavDecoder extends EventEmitter {
 
             // Subchunk1Size
             let chunk_size = buffer.readUIntLE(cursor, 4);cursor += 4;
-            //console.log(buffer.slice(cursor, cursor+4).toString('hex'));
 
             switch (chunk_type){
                 case 'fmt ':{
@@ -96,7 +94,6 @@ export class WavDecoder extends EventEmitter {
                 case 'data':{
                     this.chunk_size = chunk_size;
                     return cursor;
-                    break;
                 }
                 default:{
                     cursor += chunk_size;

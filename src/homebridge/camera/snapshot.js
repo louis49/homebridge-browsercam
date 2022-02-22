@@ -33,13 +33,13 @@ export class Snapshot{
             });
 
             this.ffmpeg.stderr.on('data', (data) => {
-                //this.log.debug("SNAPSHOT", data.toString())
+                this.log.debug("SNAPSHOT", data.toString());
             });
 
             this.ffmpeg.on('close', async () => {
-                //this.log.debug('SNAPSHOT closing ffmpeg')
+                this.log.debug('SNAPSHOT closing ffmpeg');
                 if(buffer.size > 0){
-                    //this.log.debug('SNAPSHOT resolve ffmpeg', buffer.size, size)
+                    this.log.debug('SNAPSHOT resolve ffmpeg', buffer.size, size);
                     let snapshot = buffer.drain();
                     resolve(snapshot);
                 }

@@ -22,7 +22,7 @@ export class Device extends EventEmitter{
         this.config = config;
         this.id = id;
         this.count = 0;
-        
+
         this.pendingSessions = {};
 
         this.random = false;
@@ -50,9 +50,7 @@ export class Device extends EventEmitter{
                 this.data(message);
             }
             else{
-                //console.log(message.toString());
                 let json = JSON.parse(message.toString());
-                //this.log.debug(json)
                 if(json.settings){
                     this.log.info('DEVICE', 'Settings received');
                     this.settings = json.settings;
@@ -73,7 +71,6 @@ export class Device extends EventEmitter{
 
     prepare(){
 
-        // En cas de déconnexion, il faut purger tous les buffers car un nouveau header va arriver
         switch (this.settings.mimeType){
             case 'video/webm':
                 this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer, this.log);
@@ -82,9 +79,9 @@ export class Device extends EventEmitter{
                 }
                 break;
             case 'video/mp4':
-                this.streaming_buffer = new Mp4Buffer(this.config.streaming.buffer);
+                this.streaming_buffer = new Mp4Buffer(this.config.streaming.buffer, this.log);
                 if(this.config.recording.active){
-                    this.recording_buffer = new Mp4Buffer(this.config.recording.buffer);
+                    this.recording_buffer = new Mp4Buffer(this.config.recording.buffer, this.log);
                 }
                 break;
             default:
@@ -101,16 +98,16 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.log.info('MOTION DETECTOR START');
-            this.motion_detector = new MotionDetector(this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
+            this.motion_detector = new MotionDetector(this.log, this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 
         if(this.config.noise_detector.active) {
             this.log.info('AUDIO EXTRACTOR START');
-            this.wav_decoder = new WavDecoder();
+            this.wav_decoder = new WavDecoder(this.log);
             this.noise_sensor = new Noise(this.config.noise_detector.threshold);
             this.noise_sensor.on('noise', ()=>this.emit('noise'));
-            this.audio_extractor = new AudioExtractor(this.wav_decoder);
+            this.audio_extractor = new AudioExtractor(this.wav_decoder, this.log);
             this.wav_decoder.on('audio_frame', this.noise_sensor.append.bind(this.noise_sensor));
         }
 
@@ -145,7 +142,7 @@ export class Device extends EventEmitter{
     }
 
     stream(sessionID, sessionInfo, request, callback) {
-        this.pendingSessions[sessionID].streaming = new Streaming(this.api, sessionInfo, request, callback);
+        this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, sessionInfo, request, callback);
         this.pendingSessions[sessionID].buffer = this.streaming_buffer.clone();
         this.pendingSessions[sessionID].buffer.consume(this.pendingSessions[sessionID].streaming.ffmpeg_stream.stdin);
     }

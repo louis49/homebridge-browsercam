@@ -6,8 +6,9 @@ import {fileURLToPath} from "url";
 const directory = dirname(fileURLToPath(import.meta.url));
 
 export class MotionDetector extends EventEmitter{
-    constructor(height, width, threshold, id) {
+    constructor(log, height, width, threshold, id) {
         super();
+        this.log = log;
         this.height = height;
         this.width = width;
         this.threshold = threshold;
@@ -20,22 +21,22 @@ export class MotionDetector extends EventEmitter{
         this.worker.stdin.on('error',  (e) => {});
 
         this.worker.on('message', (message) => {
-            //console.log(message)
+            this.log.debug(message);
             if(message.moving){
                 this.emit('motion');
             }
         });
 
         this.worker.stderr.on('data', (data) => {
-            console.log(data.toString());
+            this.log.debug(data.toString());
         });
 
         this.worker.stdout.on('data', (data) => {
-            //console.log(data.toString())
+            this.log.debug(data.toString());
         });
 
         this.worker.on('close',() => {
-            console.log('close motion detector');
+            this.log.info('CLOSE motion detector');
         });
     }
 

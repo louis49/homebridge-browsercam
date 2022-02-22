@@ -1,8 +1,9 @@
 import {spawn} from "child_process";
 
 export class AudioExtractor{
-    constructor(wav_decoder) {
+    constructor(wav_decoder, log) {
         this.wav_decoder = wav_decoder;
+        this.log = log;
 
         const args = `-i pipe: -vn -acodec pcm_s16le -ac 1 -f wav -blocksize 128 pipe: -hide_banner`;
         this.ffmpeg = spawn("ffmpeg", args.split(/\s+/), { env: process.env });
@@ -14,15 +15,15 @@ export class AudioExtractor{
         });
 
         this.ffmpeg.stderr.on('data', (data) => {
-            //console.log('Audio extract', data.toString());
+            this.log.debug('Audio extract', data.toString());
         });
 
         this.ffmpeg.on('error', (error) => {
-            console.log(error);
+            this.log.error(error);
         });
 
         this.ffmpeg.on('close', () => {
-            console.log("Audio extract : Fmmpeg closed");
+            this.log.debug("Audio extract : Fmmpeg closed");
         });
     }
 

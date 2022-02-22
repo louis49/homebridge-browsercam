@@ -218,7 +218,7 @@ export class Camera{
                     const isLast = !this.device.recording_buffer.streaming;
 
                     if(isLast){
-                        console.log("isLast");
+                        this.log.debug("isLast");
                     }
 
                     yield {
@@ -234,7 +234,7 @@ export class Camera{
             }
         } catch (error) {
             if (!error.message.startsWith("FFMPEG")) { // cheap way of identifying our own emitted errors
-                console.error("Encountered unexpected error on generator " + error.stack);
+                this.log.error("Encountered unexpected error on generator " + error.stack);
             }
         }
     }

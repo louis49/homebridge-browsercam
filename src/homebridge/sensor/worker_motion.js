@@ -67,7 +67,7 @@ class WorkerMotionDetector{
             //console.log(data.toString())
         });
         this.ffmpeg_framer.on('close', async () => {
-            console.log('closing ffmpeg');
+            console.log('Worker Motion : closing ffmpeg');
         });
 
         let fifo = new Fifo();

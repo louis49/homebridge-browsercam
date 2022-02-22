@@ -38,7 +38,7 @@ export class Recording{
     }
 
     handleConnection(socket) {
-        this.server.close(); // don't accept any further clients
+        this.server.close();
         this.socket = socket;
         this.connectResolve?.();
     }
@@ -78,11 +78,11 @@ export class Recording{
         });
 
         this.ffmpeg_process.stderr.on('data', (data) => {
-            //this.log.info('RECORDING', data.toString());
+            this.log.debug('RECORDING', data.toString());
         });
 
         this.ffmpeg_process.stdout.on('data', (data) => {
-            //this.log.info('RECORDING', data.toString())
+            this.log.debug('RECORDING', data.toString());
         });
 
         this.ffmpeg_process.on('close', () => {
