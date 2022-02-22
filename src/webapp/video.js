@@ -1,8 +1,8 @@
 import EventEmitter from "events";
 
 const resolutions = [
-    {width: 1920, height : 1080, fps : 30},
-    {width: 1920, height : 1080, fps : 20},
+    /*{width: 1920, height : 1080, fps : 30},
+    {width: 1920, height : 1080, fps : 20},*/
     {width: 1280, height : 720, fps : 30},
     {width: 1280, height : 720, fps : 20},
     {width: 640, height : 360, fps : 30},
