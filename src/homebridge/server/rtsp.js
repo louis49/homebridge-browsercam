@@ -1,17 +1,16 @@
-import _Mounts from "rtsp-streaming-server/build/lib/Mounts.js";
-import _PublishServer from "rtsp-streaming-server/build/lib/PublishServer.js";
-import _ClientServer from "rtsp-streaming-server/build/lib/ClientServer.js";
+import * as RTSP from "rtsp-streaming-server";
 
 export class Rtsp{
     constructor(client_port, server_port) {
-        let mounts = new _Mounts.Mounts({
+        let mounts = new RTSP.Mounts({
             rtpPortCount: 10000,
             rtpPortStart: 10000
         });
+
         let hooks = {checkMount: this.checkMount.bind(this)};
         try{
-            this.publishServer = new _PublishServer.PublishServer(server_port, mounts);
-            this.clientServer = new _ClientServer.ClientServer(client_port, mounts, hooks);
+            this.publishServer = new RTSP.PublishServer(server_port, mounts);
+            this.clientServer = new RTSP.ClientServer(client_port, mounts, hooks);
         }
         catch (e){
             console.log(e);
