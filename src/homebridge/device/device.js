@@ -101,6 +101,9 @@ export class Device extends EventEmitter{
         this.camera = new Camera(this.api, this.log, this);
 
         this.log.info('FRAMER START');
+        if(this.framer){
+            this.framer.removeAllListeners();
+        }
         this.framer = new Framer(this.log, this.settings.height, this.settings.width);
         this.framer.on('frame',(frame) => {
             this.frame = Buffer.from(frame);
@@ -108,15 +111,26 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.log.info('MOTION DETECTOR START');
+            if(this.motion_detector){
+                this.motion_detector.removeAllListeners();
+            }
             this.motion_detector = new MotionDetector(this.log, this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 
         if(this.config.noise_detector.active) {
             this.log.info('AUDIO EXTRACTOR START');
-            this.wav_decoder = new WavDecoder(this.log);
+
+            if(this.noise_sensor){
+                this.noise_sensor.removeAllListeners();
+            }
             this.noise_sensor = new Noise(this.config.noise_detector.threshold);
             this.noise_sensor.on('noise', ()=>this.emit('noise'));
+
+            if(this.wav_decoder){
+                this.wav_decoder.removeAllListeners();
+            }
+            this.wav_decoder = new WavDecoder(this.log);
             this.audio_extractor = new AudioExtractor(this.wav_decoder, this.log);
             this.wav_decoder.on('audio_frame', this.noise_sensor.append.bind(this.noise_sensor));
         }

@@ -57,6 +57,7 @@ export class Websocket extends EventEmitter{
 
                 websocketConnection.on('close', () => {
                     console.log('WS Connexion closed from', id);
+                    websocketConnection.removeAllListeners();
                     this.emit('close', id);
                 });
             }

@@ -34,6 +34,10 @@ export class Framer extends EventEmitter {
         });
 
         this.ffmpeg.on('close', async () => {
+            this.ffmpeg.removeAllListeners();
+            this.ffmpeg.stdin.removeAllListeners();
+            this.ffmpeg.stderr.removeAllListeners();
+            this.ffmpeg.stdout.removeAllListeners();
             this.log.debug('FRAMER', 'closing ffmpeg');
         });
     }

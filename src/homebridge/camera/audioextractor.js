@@ -23,6 +23,10 @@ export class AudioExtractor{
         });
 
         this.ffmpeg.on('close', () => {
+            this.ffmpeg.removeAllListeners();
+            this.ffmpeg.stdin.removeAllListeners();
+            this.ffmpeg.stderr.removeAllListeners();
+            this.ffmpeg.stdout.removeAllListeners();
             this.log.debug("Audio extract : Fmmpeg closed");
         });
     }

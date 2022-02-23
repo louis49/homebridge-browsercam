@@ -36,6 +36,10 @@ export class MotionDetector extends EventEmitter{
         });
 
         this.worker.on('close',() => {
+            this.worker.removeAllListeners();
+            this.worker.stdin.removeAllListeners();
+            this.worker.stderr.removeAllListeners();
+            this.worker.stdout.removeAllListeners();
             this.log.info('CLOSE motion detector');
         });
     }

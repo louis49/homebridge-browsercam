@@ -45,8 +45,11 @@ export class Recording{
 
     destroy() {
         this.socket?.destroy();
-        this.ffmpeg_process?.removeAllListeners();
         this.ffmpeg_process?.kill();
+        this.ffmpeg_process?.removeAllListeners();
+        this.ffmpeg_process?.stdin.removeAllListeners();
+        this.ffmpeg_process?.stderr.removeAllListeners();
+        this.ffmpeg_process?.stdout.removeAllListeners();
 
         this.socket = undefined;
         this.ffmpeg_process = undefined;
@@ -70,7 +73,7 @@ export class Recording{
         this.ffmpeg_process = spawn(ffmpeg_for_homebridge??"ffmpeg", this.args, { env: process.env });
 
         this.ffmpeg_process.stdin.on('error',  (error) => {
-            this.log.error('RECORDING', error);
+            //this.log.error('RECORDING', error);
         });
 
         this.ffmpeg_process.on('error', (error) => {

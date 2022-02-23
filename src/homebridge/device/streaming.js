@@ -67,7 +67,7 @@ export class Streaming{
         this.ffmpeg_stream = spawn(ffmpeg_for_homebridge??"ffmpeg", ffmpegArgs.split(/\s+/), {env: process.env});
 
         this.ffmpeg_stream.stdin.on('error',  (e) => {
-            this.log.error(e);
+            //this.log.error(e);
         });
 
         this.ffmpeg_stream.stdout.on('data', (data) => {
@@ -87,6 +87,10 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.on('close', () => {
+            this.ffmpeg_stream.removeAllListeners();
+            this.ffmpeg_stream.stdin.removeAllListeners();
+            this.ffmpeg_stream.stderr.removeAllListeners();
+            this.ffmpeg_stream.stdout.removeAllListeners();
             this.log.debug('STREAMING : Closing ffmpeg');
         });
 

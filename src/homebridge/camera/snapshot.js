@@ -19,7 +19,7 @@ export class Snapshot{
             this.ffmpeg = spawn(ffmpeg_for_homebridge??"ffmpeg", args.split(/\s+/), { env: process.env });
 
             this.ffmpeg.stdin.on('error',  (e) => {
-                this.log.error(e);
+                //this.log.error(e);
             });
 
             let buffer = new Fifo(this.width*this.height*3*2);
@@ -37,6 +37,10 @@ export class Snapshot{
             });
 
             this.ffmpeg.on('close', async () => {
+                this.ffmpeg.removeAllListeners();
+                this.ffmpeg.stdin.removeAllListeners();
+                this.ffmpeg.stderr.removeAllListeners();
+                this.ffmpeg.stdout.removeAllListeners();
                 this.log.debug('SNAPSHOT closing ffmpeg');
                 if(buffer.size > 0){
                     this.log.debug('SNAPSHOT resolve ffmpeg', buffer.size, size);

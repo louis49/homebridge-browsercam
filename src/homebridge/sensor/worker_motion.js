@@ -34,6 +34,10 @@ class WorkerMotionDetector{
             });
 
             this.ffmpeg_demo.on('close', () => {
+                this.ffmpeg_demo.removeAllListeners();
+                this.ffmpeg_demo.stdin.removeAllListeners();
+                this.ffmpeg_demo.stderr.removeAllListeners();
+                this.ffmpeg_demo.stdout.removeAllListeners();
                 console.log("MOTION DETECTOR : Fmmpeg closed");
             });
         }
@@ -56,7 +60,7 @@ class WorkerMotionDetector{
         this.ffmpeg_framer = spawn(ffmpeg_for_homebridge??"ffmpeg", ffmpegArgs_framer.split(/\s+/), { env: process.env });
 
         this.ffmpeg_framer.stdin.on('error',  (e) => {
-            console.log(e);
+            //console.log(e);
         });
 
         this.ffmpeg_framer.stderr.on('data', (data) => {
@@ -67,6 +71,10 @@ class WorkerMotionDetector{
             //console.log(data.toString())
         });
         this.ffmpeg_framer.on('close', async () => {
+            this.ffmpeg_framer.removeAllListeners();
+            this.ffmpeg_framer.stdin.removeAllListeners();
+            this.ffmpeg_framer.stderr.removeAllListeners();
+            this.ffmpeg_framer.stdout.removeAllListeners();
             console.log('Worker Motion : closing ffmpeg');
         });
 
