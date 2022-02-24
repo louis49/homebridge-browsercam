@@ -25,14 +25,14 @@
   "author": "@louis49",
   "license": "MIT",
   "dependencies": {
+    "@louis49/nodeopencv": "^1.0.0",
     "core-js": "^3.21.0",
     "express": "^4.17.2",
     "ffmpeg-for-homebridge": "^0.0.9",
     "fifo-buffer": "^1.0.0",
     "node-forge": "^1.2.1",
-    "@louis49/nodeopencv": "^1.0.0",
     "pick-port": "^1.0.0",
-    "rtsp-streaming-server": "github:louis49/rtsp-streaming-server",
+    "rtsp-streaming-server": "github:chriswiggins/rtsp-streaming-server#19b792884ec16464becb486424278734a583f207",
     "ws": "^8.4.2"
   },
   "devDependencies": {
