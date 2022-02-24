@@ -61,8 +61,9 @@ export class Device extends EventEmitter{
             }
             else{
                 let json = JSON.parse(message.toString());
+                //this.log.info('Receive message:', json);
                 if(json.settings){
-                    this.log.info('DEVICE', 'Settings received');
+                    this.log.info('DEVICE', 'Settings received', json.settings);
                     this.settings = json.settings;
                     this.prepare();
                     if(!this.ready){
@@ -73,7 +74,18 @@ export class Device extends EventEmitter{
                     this.emit('power', true);
                 }
                 else if (json.pulse){
+                    this.log.info('DEVICE', 'Pulse received');
                     this.emit('pulse');
+                }
+                else if (json.battery_level !== undefined){
+                    this.log.info('DEVICE', 'Battery level received', json.battery_level);
+                    this.settings.battery_level = json.battery_level;
+                    this.emit('battery_level', json.battery_level);
+                }
+                else if (json.battery_charging !== undefined){
+                    this.log.info('DEVICE', 'Battery charging received', json.battery_charging);
+                    this.settings.battery_charging = json.battery_charging;
+                    this.emit('battery_charging', json.battery_charging);
                 }
             }
         });

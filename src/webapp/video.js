@@ -87,6 +87,19 @@ export class Video extends EventEmitter {
 
             let mimeType = mimeTypeWebm?'video/webm':mimeTypeMp4?'video/mp4':null;
             let settings = this.stream.getVideoTracks()[0].getSettings();
+            let battery = false;
+            let battery_level = 0;
+            let battery_charging = false;
+
+            try{
+                battery = await navigator.getBattery();
+                battery_level = battery.level;
+                battery_charging = battery.charging;
+            }
+            catch (_) {}
+
+
+
             let devices = await navigator.mediaDevices.enumerateDevices();
             let device = devices.find((device) => device.deviceId===settings.deviceId && device.kind === 'videoinput');
             let capabilities = this.stream.getVideoTracks()[0].getCapabilities();
@@ -101,6 +114,9 @@ export class Video extends EventEmitter {
                     width:settings.width,
                     frameRate:settings.frameRate,
                     torch:(capabilities.torch === undefined)?null:settings.torch,
+                    battery: !!battery,
+                    battery_level,
+                    battery_charging,
                     mimeType
                 }};
             this.mediaRecorder = new MediaRecorder(this.stream, {

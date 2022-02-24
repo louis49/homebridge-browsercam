@@ -60,6 +60,11 @@ export class BrowserCam {
             accessory.addService(this.api.hap.Service.OccupancySensor, 'Pulse sensor', this.api.hap.uuid.generate('Pulse Sensor'), 'pulse');
         }
 
+        // Battery
+        if(device.settings.battery) {
+            accessory.addService(this.api.hap.Service.Battery, 'Battery monitor', this.api.hap.uuid.generate('Battery Monitor'), 'battery');
+        }
+
         //accessory.addService(this.api.hap.Service, 'Adjust', this.api.hap.uuid.generate('Adjust') , 'adjust')
 
         this.configureAccessory(accessory);
@@ -102,6 +107,29 @@ export class BrowserCam {
                 .on("get", (callback) => {
                     callback(null, accessory.context.device.settings.torch);
                 });
+        }
+
+        this.batteryService = accessory.getService('Battery monitor');
+        if(this.batteryService){
+
+            this.batteryService.getCharacteristic(this.api.hap.Characteristic.BatteryLevel).on("get", (callback) => {
+                callback(null, accessory.context.device.settings.battery_level * 100);
+            });
+            this.batteryService.getCharacteristic(this.api.hap.Characteristic.StatusLowBattery).on("get", (callback) => {
+                callback(null, accessory.context.device.settings.battery_level>0.2?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+            });
+            this.batteryService.getCharacteristic(this.api.hap.Characteristic.ChargingState).on("get", (callback) => {
+                callback(null, accessory.context.device.settings.battery_charging?this.api.hap.Characteristic.ChargingState.CHARGING:this.api.hap.Characteristic.ChargingState.NOT_CHARGING);
+            });
+
+            accessory.context.device.on('battery_level', (level) => {
+                this.batteryService.getCharacteristic(this.api.hap.Characteristic.BatteryLevel).updateValue(level*100);
+                this.batteryService.getCharacteristic(this.api.hap.Characteristic.StatusLowBattery).updateValue(level>0.2?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+            });
+
+            accessory.context.device.on('battery_charging', (charging) => {
+                this.batteryService.getCharacteristic(this.api.hap.Characteristic.ChargingState).updateValue(charging?this.api.hap.Characteristic.ChargingState.CHARGING:this.api.hap.Characteristic.ChargingState.NOT_CHARGING);
+            });
         }
 
         // TEST Threshold
