@@ -3,15 +3,8 @@ import EventEmitter from "events";
 export class Device extends EventEmitter {
     constructor(threshold) {
         super();
-        console.log('Device Init');
-        this.threshold = threshold;
 
-        if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
-            window.addEventListener("touchstart", this.request.bind(this), true);
-        }
-        else{
-            this.start();
-        }
+        this.threshold = threshold;
 
         this.x = 0;
         this.y = 0;
@@ -20,16 +13,29 @@ export class Device extends EventEmitter {
         this.started = false;
     }
 
+    async init(){
+        console.log('Device Init');
+        try{
+            if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
+                window.addEventListener("touchstart", this.request.bind(this), true);
+            }
+            else{
+                await this.start();
+            }
+        }
+        catch (_) {}
+    }
+
     request(){
-        console.log("request");
-        DeviceMotionEvent.requestPermission().then((state) => {
+        console.log("Device request");
+        DeviceMotionEvent.requestPermission().then(async (state) => {
             if (state === "granted") {
-                this.start();
+                await this.start();
             }
         });
     }
 
-    start(){
+    async start(){
         console.log("START MOTION");
 
         window.addEventListener("devicemotion", this.handleMotionEvent.bind(this), true);

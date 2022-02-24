@@ -14,8 +14,9 @@ async function start(){
             30000,
             identifier);
 
-        client.on('pulse_detector', (threshold) => {
+        client.on('pulse_detector', async (threshold) => {
             let device = new Device(threshold);
+            await device.init();
             device.on('pulse', () => {
                 //document.getElementById("log").value += `\rOn Pulse ${threshold}`;
                 client.send_message({'pulse':true, 'id':identifier});
