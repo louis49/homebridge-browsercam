@@ -116,7 +116,7 @@ export class BrowserCam {
                 callback(null, accessory.context.device.settings.battery_level * 100);
             });
             this.batteryService.getCharacteristic(this.api.hap.Characteristic.StatusLowBattery).on("get", (callback) => {
-                callback(null, accessory.context.device.settings.battery_level>0.2?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+                callback(null, accessory.context.device.settings.battery_level>0.20?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
             });
             this.batteryService.getCharacteristic(this.api.hap.Characteristic.ChargingState).on("get", (callback) => {
                 callback(null, accessory.context.device.settings.battery_charging?this.api.hap.Characteristic.ChargingState.CHARGING:this.api.hap.Characteristic.ChargingState.NOT_CHARGING);
@@ -124,7 +124,7 @@ export class BrowserCam {
 
             accessory.context.device.on('battery_level', (level) => {
                 this.batteryService.getCharacteristic(this.api.hap.Characteristic.BatteryLevel).updateValue(level*100);
-                this.batteryService.getCharacteristic(this.api.hap.Characteristic.StatusLowBattery).updateValue(level>0.2?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+                this.batteryService.getCharacteristic(this.api.hap.Characteristic.StatusLowBattery).updateValue(level>0.20?this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL:this.api.hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
             });
 
             accessory.context.device.on('battery_charging', (charging) => {
