@@ -1,5 +1,6 @@
 # homebridge-browsercam
 
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 [![npm-version](https://badgen.net/npm/v/homebridge-browsercam?icon=npm)](https://www.npmjs.com/package/homebridge-browsercam)
 [![npm-total-downloads](https://badgen.net/npm/dt/homebridge-browsercam?icon=npm)](https://www.npmjs.com/package/homebridge-browsercam)
 
