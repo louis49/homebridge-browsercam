@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import EventEmitter from "events";
 
-const timeout = 10000;
+const timeout = 30000;
 export class Websocket extends EventEmitter{
     constructor(server) {
         super();

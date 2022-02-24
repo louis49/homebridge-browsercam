@@ -11,7 +11,7 @@ async function start(){
 
         let client = new Client(location.hostname,
             parseInt(location.port,10)?parseInt(location.port,10):443,
-            10000,
+            30000,
             identifier);
 
         client.on('pulse_detector', (threshold) => {
