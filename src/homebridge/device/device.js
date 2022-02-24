@@ -196,6 +196,7 @@ export class Device extends EventEmitter{
     }
 
     close(){
+        this.ready = false;
         this.emit('power', false);
         this.emit('close',this.id);
     }

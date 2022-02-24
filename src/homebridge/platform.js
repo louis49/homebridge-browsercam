@@ -33,6 +33,7 @@ export class BrowserCam {
     }
 
     addAccessory(device){
+        device.removeAllListeners('ready');
         this.log.info('Adding Accessory', device.uuid);
         let displayName = device.settings.name; //`${device.settings.name} | ${device.settings.vendor} | ${device.settings.platform}`
         let accessory = new this.api.platformAccessory(displayName, device.uuid, this.api.hap.Categories.CAMERA);
