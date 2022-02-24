@@ -1,6 +1,6 @@
 {
   "name": "homebridge-browsercam",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A homebridge plugin enabling HomeKit support for camera with any phones, tablets, laptops, computers : everything that have a camera, a network access and a not too old/crappy browser.",
   "main": "./dist/homebridge/index.js",
   "scripts": {
@@ -25,6 +25,7 @@
   "author": "@louis49",
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.17.2",
     "@louis49/nodeopencv": "^1.0.0",
     "core-js": "^3.21.0",
     "express": "^4.17.2",
