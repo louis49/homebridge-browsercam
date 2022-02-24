@@ -22,7 +22,7 @@ export class AdminServer extends EventEmitter {
 
         this.app = express();
 
-        this.app.use('/', express.static(path.join(directory,'../../../dist/static')));
+        this.app.use('/', express.static(path.join(directory,'../../webapp')));
 
         this.cert_path = path.join(this.config_path, cert_file);
         this.key_path = path.join(this.config_path, key_file);

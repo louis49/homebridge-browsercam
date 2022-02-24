@@ -8,7 +8,7 @@ export default {
     mode: 'development',
     entry: './src/webapp/index.js',
     output: {
-        path: path.resolve(directory, 'dist/static'),
+        path: path.resolve(directory, 'dist/webapp'),
         filename: 'webapp.bundle.js',
     },
     plugins: [
