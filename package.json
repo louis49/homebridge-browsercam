@@ -6,7 +6,7 @@
   "scripts": {
     "build-dev": "webpack --config webpack.config.js --devtool source-map",
     "build": "webpack --config webpack.config.js",
-    "babel": "babel ./src/homebridge/*.* --out-dir dist -D"
+    "babel": "babel ./src/homebridge/*.* --out-dir dist/homebridge --delete-dir-on-start -D && babel ./src/homebridge/camera/*.* --out-dir dist/homebridge/camera -D && babel ./src/homebridge/device/*.* --out-dir dist/homebridge/device -D && babel ./src/homebridge/sensor/*.* --out-dir dist/homebridge/sensor -D && babel ./src/homebridge/server/*.* --out-dir dist/homebridge/server -D"
   },
   "engines": {
     "node": ">=14.0.0",
