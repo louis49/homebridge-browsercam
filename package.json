@@ -30,6 +30,7 @@
     "ffmpeg-for-homebridge": "^0.0.9",
     "fifo-buffer": "^1.0.0",
     "node-forge": "^1.2.1",
+    "@louis49/nodeopencv": "^1.0.0",
     "pick-port": "^1.0.0",
     "rtsp-streaming-server": "github:louis49/rtsp-streaming-server",
     "ws": "^8.4.2"

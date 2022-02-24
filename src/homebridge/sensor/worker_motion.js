@@ -1,5 +1,5 @@
 import {workerData, parentPort} from "worker_threads";
-import cv from "./opencv.cjs";
+import cv from "@louis49/nodeopencv";
 import {spawn} from "child_process";
 import Fifo from "fifo-buffer";
 import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
