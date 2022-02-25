@@ -82,7 +82,7 @@ export class Device extends EventEmitter {
         }
         else{
             //console.log('PULSE SENSOR', 'send pulse');
-            this.emit('pulse');
+            this.emit('pulse', message);
         }
         this.pulse_timeout = setTimeout(() => {
             console.log('PULSE SENSOR', 'end timeout');

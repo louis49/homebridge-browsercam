@@ -23,6 +23,7 @@ export class MotionDetector extends EventEmitter{
         this.worker.on('message', (message) => {
             this.log.debug(message);
             if(message.moving){
+                this.log.info('Motion detected :', `${message.value.toFixed(2)}/${this.threshold}`);
                 this.emit('motion');
             }
         });

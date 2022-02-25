@@ -147,7 +147,7 @@ class WorkerMotionDetector{
                 }
 
                 if((this.cursurface*100)/(this.output_height*this.output_width) >= this.threshold){
-                    parentPort.postMessage({ moving: true });
+                    parentPort.postMessage({ moving: true, value:(this.cursurface*100)/(this.output_height*this.output_width)});
                 }
 
                 hierarchy.delete();

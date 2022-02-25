@@ -18,9 +18,9 @@ async function start(){
             let device = new Device(threshold);
             await device.init();
 
-            device.on('pulse', () => {
+            device.on('pulse', (values) => {
                 //document.getElementById("log").value += `\rOn Pulse ${threshold}`;
-                client.send_message({'pulse':true, 'id':identifier});
+                client.send_message({'pulse':true, values, 'id':identifier});
             });
 
             device.on('battery_level', (level) => {

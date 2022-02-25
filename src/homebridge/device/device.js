@@ -74,7 +74,7 @@ export class Device extends EventEmitter{
                     this.emit('power', true);
                 }
                 else if (json.pulse){
-                    this.log.info('DEVICE', 'Pulse received');
+                    this.log.info('Pulse detected :', `(${json.values.diff_x.toFixed(2)}-${json.values.diff_y.toFixed(2)}-${json.values.diff_z.toFixed(2)})/${this.config.pulse_detector.threshold}`);
                     this.emit('pulse');
                 }
                 else if (json.battery_level !== undefined){
@@ -136,7 +136,7 @@ export class Device extends EventEmitter{
             if(this.noise_sensor){
                 this.noise_sensor.removeAllListeners();
             }
-            this.noise_sensor = new Noise(this.config.noise_detector.threshold);
+            this.noise_sensor = new Noise(this.config.noise_detector.threshold, this.log);
             this.noise_sensor.on('noise', ()=>this.emit('noise'));
 
             if(this.wav_decoder){

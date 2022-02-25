@@ -1,8 +1,9 @@
 import EventEmitter from "events";
 export class Noise extends EventEmitter {
-    constructor(threshold) {
+    constructor(threshold, log) {
         super();
         this.threshold = threshold;
+        this.log = log;
     }
 
     append(frame){
@@ -13,6 +14,7 @@ export class Noise extends EventEmitter {
             compressedRMS = 0;
         }
         if(compressedRMS * 100 > this.threshold){
+            this.log.info('Noise detected :', `${(compressedRMS*100).toFixed(2)}/${this.threshold}`);
             this.emit('noise');
         }
     }
