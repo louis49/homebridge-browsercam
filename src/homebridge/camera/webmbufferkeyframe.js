@@ -376,7 +376,9 @@ export class Webmbufferkeyframe {
             if(this.debug) {
                 fs.writeFileSync(this.debug_file, frame, {flag:'a'});
             }
-            writer.write(frame);
+            if(writer.writable){
+                writer.write(frame);
+            }
 
             // on Nettoie
             if(next.keyframe && next.track_number === this.video_track) {
