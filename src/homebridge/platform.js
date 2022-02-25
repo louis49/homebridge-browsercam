@@ -366,7 +366,7 @@ export class BrowserCam {
                     }
                 },
                 audio: {
-                    twoWayAudio: false,
+                    twoWayAudio: true,
                     codecs: [
                         {
                             /*type: api.hap.AudioStreamingCodecType.AAC_ELD,
