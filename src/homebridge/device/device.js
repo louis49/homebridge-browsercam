@@ -12,6 +12,8 @@ import {Mp4Buffer} from "../camera/mp4buffer.js";
 import {WavDecoder} from "../camera/wavdecoder.js";
 import {Noise} from "../sensor/noise.js";
 
+import {TwoWay} from "../camera/twoway.js";
+
 const prefix = 'homebridge:browsercam-';
 
 export class Device extends EventEmitter{
@@ -227,4 +229,11 @@ export class Device extends EventEmitter{
         this.log.info('Sending Reload');
         this.ws.send(JSON.stringify({reload : {value:true}, id:this.id}));
     }
+
+    start_twowayaudio(audio_port, video_port, ipv6, target_address, audio_key, codec, sample_rate){
+        this.log.info('Starting Two Way Audio Server');
+        this.twoway = new TwoWay(audio_port, ipv6, target_address, audio_key, codec, sample_rate);
+        this.twoway.start();
+    }
+
 }
