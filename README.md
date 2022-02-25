@@ -41,6 +41,7 @@ sudo npm install -g --unsafe-perm homebridge-browsercam
 * Noise Sensor
 * Pulse Sensor
 * Torch if present become a light switch
+* Battery state and level
 
 ## Configuration
 
@@ -54,7 +55,8 @@ replace key.pem and cert.pem in .homebridge/browsercam folder and restart
 The best choice for that project, I personally use an old and crappy Huawei
 
 * iPhone : ✓
-You can't have 'torch' option : it will be not presented in HomeKit
+You can't have 'torch' option : it will be not presented in HomeKit 
+You can't have 'battery' information : it will be not presented in HomeKit
 
 * Laptop : ✓
 Facing Mode is automatically at 'environment' value, but in this case, "user" value is preferred

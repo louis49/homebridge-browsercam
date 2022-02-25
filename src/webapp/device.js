@@ -37,8 +37,20 @@ export class Device extends EventEmitter {
 
     async start(){
         console.log("START MOTION");
-
         window.addEventListener("devicemotion", this.handleMotionEvent.bind(this), true);
+
+        console.log("START BATTERY");
+        this.battery = await navigator.getBattery();
+        this.battery.addEventListener('levelchange', this.handleBatteryLevelChangeEvent.bind(this));
+        this.battery.addEventListener('chargingchange', this.handleBatteryChargingChangeEvent.bind(this));
+    }
+
+    handleBatteryLevelChangeEvent(){
+        this.emit('battery_level', this.battery.level);
+    }
+
+    handleBatteryChargingChangeEvent(){
+        this.emit('battery_charging', this.battery.charging);
     }
 
     handleMotionEvent(event){
