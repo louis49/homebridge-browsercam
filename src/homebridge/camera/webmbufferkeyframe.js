@@ -353,14 +353,14 @@ export class Webmbufferkeyframe {
 
     tick(writer, current, cluster_keyframe_start, cluster_timecode, time_out){
         setTimeout(() => {
-            if(this.streaming === false){
+            if(this.streaming === false && writer.writable){
                 this.log.debug("WRITING END STREAMING");
                 writer.end(Buffer.from([]));
                 return;
             }
             let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
 
-            if(!next){
+            if(!next && writer.writable){
                 this.log.debug("FLUX END : WRITING END STREAMING");
                 this.streaming = false;
                 writer.end(new Buffer.from([]));

@@ -71,7 +71,6 @@ export class Mp4Buffer{
             this.log.debug(type, data.length);
             switch (type){
                 case 'mvhd':
-
                     this.time_scale = this.parseMvHd(data);
                     break;
                 case 'trak':
