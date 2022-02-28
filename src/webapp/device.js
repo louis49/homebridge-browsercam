@@ -24,6 +24,30 @@ export class Device extends EventEmitter {
             }
         }
         catch (_) {}
+
+        //chrome://flags/#enable-generic-sensor-extra-classes 
+        document.getElementById('log').value+="'AmbientLightSensor' in window " + 'AmbientLightSensor' in window;
+        navigator.permissions.query({ name: 'ambient-light-sensor' }).then(result => {
+            if (result.state === 'denied') {
+                console.log('Permission to use ambient light sensor is denied.');
+                return;
+            }
+
+            const als = new AmbientLightSensor({frequency: 10});
+            als.addEventListener('activate', () => console.log('Ready to measure EV.'));
+            als.addEventListener('error', event => console.log(`Error: ${event.error.name}`));
+            als.addEventListener('reading', () => {
+                // Defaut ISO value.
+                const ISO = 100;
+                // Incident-light calibration constant.
+                const C = 250;
+
+                let EV = Math.round(Math.log2((als.illuminance * ISO) / C));
+                console.log(`Exposure Value (EV) is: ${EV}`);
+            });
+
+            als.start();
+        });
     }
 
     request(){
