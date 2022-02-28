@@ -29,19 +29,19 @@ export class MotionDetector extends EventEmitter{
         });
 
         this.worker.stderr.on('data', (data) => {
-            this.log.debug(data.toString());
+            this.log.debug('MOTION', data.toString());
         });
 
         this.worker.stdout.on('data', (data) => {
-            this.log.debug(data.toString());
+            this.log.debug('MOTION', data.toString());
         });
 
         this.worker.on('close',() => {
+            this.log.info('MOTION', 'closing worker');
             this.worker.removeAllListeners();
             this.worker.stdin.removeAllListeners();
             this.worker.stderr.removeAllListeners();
             this.worker.stdout.removeAllListeners();
-            this.log.info('CLOSE motion detector');
         });
     }
 
@@ -49,5 +49,15 @@ export class MotionDetector extends EventEmitter{
         if(this.worker.stdin.writable){
             this.worker.stdin.write(buffer);
         }
+    }
+
+    async close(){
+        this.log.info('MOTION', 'Close - Killing worker');
+        await this.worker?.terminate();
+        this.worker.removeAllListeners();
+        this.worker.stdin.removeAllListeners();
+        this.worker.stderr.removeAllListeners();
+        this.worker.stdout.removeAllListeners();
+        this.removeAllListeners();
     }
 }

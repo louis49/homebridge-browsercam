@@ -464,6 +464,7 @@ export class Webmbufferkeyframe {
             }
             else{
                 this.log.error(buffer.slice(cursor, cursor+4).toString('hex'));
+                throw new Error('Need to restart device');
             }
         }
     }

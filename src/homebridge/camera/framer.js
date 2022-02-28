@@ -14,6 +14,8 @@ export class Framer extends EventEmitter {
         const args = `-i pipe: -f rawvideo -pix_fmt bgr24 pipe: -hide_banner`;
         this.ffmpeg = spawn(ffmpeg_for_homebridge??"ffmpeg", args.split(/\s+/), { env: process.env });
 
+        this.ffmpeg.stdin.on('error',  (e) => {});
+
         let buffer = new Fifo(this.height*this.width*3*2);
         this.ffmpeg.stdout.on('data', (data) => {
             let k = buffer.enq(data);
@@ -34,11 +36,11 @@ export class Framer extends EventEmitter {
         });
 
         this.ffmpeg.on('close', async () => {
-            this.ffmpeg.removeAllListeners();
-            this.ffmpeg.stdin.removeAllListeners();
-            this.ffmpeg.stderr.removeAllListeners();
-            this.ffmpeg.stdout.removeAllListeners();
-            this.log.debug('FRAMER', 'closing ffmpeg');
+            this.log.info('FRAMER', 'closing ffmpeg');
+            this.ffmpeg?.stdin.removeAllListeners();
+            this.ffmpeg?.stderr.removeAllListeners();
+            this.ffmpeg?.stdout.removeAllListeners();
+            this.ffmpeg?.removeAllListeners();
         });
     }
 
@@ -46,5 +48,11 @@ export class Framer extends EventEmitter {
         if(this.ffmpeg.stdin.writable){
             this.ffmpeg.stdin.write(buffer);
         }
+    }
+
+    close(){
+        this.log.info('FRAMER', 'Close - Killing ffmpeg');
+        this.ffmpeg?.kill('SIGKILL');
+        this.removeAllListeners();
     }
 }

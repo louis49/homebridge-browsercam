@@ -74,7 +74,7 @@ export class Device extends EventEmitter{
                     this.emit('power', true);
                 }
                 else if (json.pulse){
-                    this.log.info('Pulse detected :', `(${json.values.diff_x.toFixed(2)}-${json.values.diff_y.toFixed(2)}-${json.values.diff_z.toFixed(2)})/${this.config.pulse_detector.threshold}`);
+                    this.log.info('DEVICE', 'Pulse detected :', `(${json.values.diff_x.toFixed(2)}-${json.values.diff_y.toFixed(2)}-${json.values.diff_z.toFixed(2)})/${this.config.pulse_detector.threshold}`);
                     this.emit('pulse');
                 }
                 else if (json.battery_level !== undefined){
@@ -113,9 +113,6 @@ export class Device extends EventEmitter{
         this.camera = new Camera(this.api, this.log, this.config, this);
 
         this.log.info('FRAMER START');
-        if(this.framer){
-            this.framer.removeAllListeners();
-        }
         this.framer = new Framer(this.log, this.settings.height, this.settings.width);
         this.framer.on('frame',(frame) => {
             this.frame = Buffer.from(frame);
@@ -123,25 +120,14 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.log.info('MOTION DETECTOR START');
-            if(this.motion_detector){
-                this.motion_detector.removeAllListeners();
-            }
             this.motion_detector = new MotionDetector(this.log, this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 
         if(this.config.noise_detector.active) {
             this.log.info('AUDIO EXTRACTOR START');
-
-            if(this.noise_sensor){
-                this.noise_sensor.removeAllListeners();
-            }
             this.noise_sensor = new Noise(this.config.noise_detector.threshold, this.log);
             this.noise_sensor.on('noise', ()=>this.emit('noise'));
-
-            if(this.wav_decoder){
-                this.wav_decoder.removeAllListeners();
-            }
             this.wav_decoder = new WavDecoder(this.log);
             this.audio_extractor = new AudioExtractor(this.wav_decoder, this.log);
             this.wav_decoder.on('audio_frame', this.noise_sensor.append.bind(this.noise_sensor));
@@ -162,15 +148,21 @@ export class Device extends EventEmitter{
 
         this.framer.copy(buffer);
 
-        this.streaming_buffer.append(buffer);
-        for(let sessionID of Object.keys(this.pendingSessions)){
-            if(this.pendingSessions[sessionID].buffer){
-                this.pendingSessions[sessionID].buffer.append(buffer);
+        try{
+            this.streaming_buffer.append(buffer);
+            for(let sessionID of Object.keys(this.pendingSessions)){
+                if(this.pendingSessions[sessionID].buffer){
+                    this.pendingSessions[sessionID].buffer.append(buffer);
+                }
+            }
+
+            if(this.config.recording.active) {
+                this.recording_buffer.append(buffer);
             }
         }
-
-        if(this.config.recording.active) {
-            this.recording_buffer.append(buffer);
+        catch(e){
+            this.log.error(e);
+            this.reload();
         }
 
         if(this.config.motion_detector.active) {
@@ -207,9 +199,32 @@ export class Device extends EventEmitter{
         this.recording_buffer.stop();
     }
 
-    close(){
+    async close(){
         this.ready = false;
         this.emit('power', false);
-        this.emit('close',this.id);
+
+        this.recording_buffer.stop();
+        for(let sessionID of Object.keys(this.pendingSessions)){
+            if(this.pendingSessions[sessionID].buffer){
+                this.pendingSessions[sessionID].buffer.stop();
+            }
+        }
+
+        this.framer.close();
+        if(this.audio_extractor){
+            this.audio_extractor.close();
+        }
+        if(this.noise_sensor){
+            this.noise_sensor.removeAllListeners();
+        }
+        if(this.wav_decoder){
+            this.wav_decoder.removeAllListeners();
+        }
+        await this.motion_detector.close();
+    }
+
+    reload(){
+        this.log.info('Sending Reload');
+        this.ws.send(JSON.stringify({reload : {value:true}, id:this.id}));
     }
 }
