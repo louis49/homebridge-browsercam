@@ -5,9 +5,10 @@ import {Recording} from "../device/recording.js";
 
 export class Camera{
 
-    constructor(api, log, device) {
+    constructor(api, log, config, device) {
         this.api = api;
         this.log = log;
+        this.config = config;
         this.device = device;
     }
 
@@ -146,7 +147,7 @@ export class Camera{
 
         const video = [
             "-codec:v",
-            "libx264",
+            this.config.h264??'libx264',
             "-preset:v", "ultrafast", //https://trac.ffmpeg.org/wiki/Encode/H.264
             "-tune", "zerolatency",
             "-pix_fmt",

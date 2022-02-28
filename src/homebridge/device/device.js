@@ -110,7 +110,7 @@ export class Device extends EventEmitter{
                 throw new Error('MimeType not recognized');
         }
 
-        this.camera = new Camera(this.api, this.log, this);
+        this.camera = new Camera(this.api, this.log, this.config, this);
 
         this.log.info('FRAMER START');
         if(this.framer){
@@ -183,7 +183,7 @@ export class Device extends EventEmitter{
     }
 
     stream(sessionID, sessionInfo, request, callback) {
-        this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, sessionInfo, request, callback);
+        this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
         this.pendingSessions[sessionID].buffer = this.streaming_buffer.clone();
         this.pendingSessions[sessionID].buffer.consume(this.pendingSessions[sessionID].streaming.ffmpeg_stream.stdin);
     }
