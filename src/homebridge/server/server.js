@@ -32,6 +32,14 @@ export class AdminServer extends EventEmitter {
         this.cert_path = path.join(this.config_path, cert_file);
         this.key_path = path.join(this.config_path, key_file);
         try {
+            log.info("Checking folder");
+            fs.accessSync(this.config_path, fs.constants.R_OK);
+        } catch (err) {
+            log.info("Creating folder");
+            fs.mkdirSync(this.config_path);
+        }
+
+        try {
             log.info("Checking certificate");
             fs.accessSync(this.cert_path, fs.constants.R_OK);
             fs.accessSync(this.key_path, fs.constants.R_OK);
