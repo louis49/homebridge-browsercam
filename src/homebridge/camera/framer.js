@@ -47,4 +47,14 @@ export class Framer extends EventEmitter {
             this.ffmpeg.stdin.write(buffer);
         }
     }
+
+    close(){
+        this.log.info('FRAMER', 'Close - Killing ffmpeg');
+        this.ffmpeg?.kill();
+        this.ffmpeg?.removeAllListeners();
+        this.ffmpeg?.stdin.removeAllListeners();
+        this.ffmpeg?.stderr.removeAllListeners();
+        this.ffmpeg?.stdout.removeAllListeners();
+        this.removeAllListeners();
+    }
 }
