@@ -74,7 +74,7 @@ export class Device extends EventEmitter{
                     this.emit('power', true);
                 }
                 else if (json.pulse){
-                    this.log.info('Pulse detected :', `(${json.values.diff_x.toFixed(2)}-${json.values.diff_y.toFixed(2)}-${json.values.diff_z.toFixed(2)})/${this.config.pulse_detector.threshold}`);
+                    this.log.info('DEVICE', 'Pulse detected :', `(${json.values.diff_x.toFixed(2)}-${json.values.diff_y.toFixed(2)}-${json.values.diff_z.toFixed(2)})/${this.config.pulse_detector.threshold}`);
                     this.emit('pulse');
                 }
                 else if (json.battery_level !== undefined){
@@ -210,6 +210,9 @@ export class Device extends EventEmitter{
     close(){
         this.ready = false;
         this.emit('power', false);
-        this.emit('close',this.id);
+
+        this.framer.close();
+        this.motion_detector.close();
+        this.audio_extractor.close();
     }
 }
