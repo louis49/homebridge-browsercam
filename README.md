@@ -75,6 +75,8 @@ Facing Mode is automatically at 'environment' value, but in this case, "user" va
 
 * Server 
   * port : 443
+* H264 codec
+  * H264 (H264 OMX available)
 * Streaming :
   * buffer : 500 ms
 * Recording
