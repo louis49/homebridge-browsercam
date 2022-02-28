@@ -24,11 +24,11 @@ export class AudioExtractor{
         });
 
         this.ffmpeg.on('close', () => {
+            this.log.info('AUDIO EXTRACTOR', 'closing ffmpeg');
             this.ffmpeg.removeAllListeners();
             this.ffmpeg.stdin.removeAllListeners();
             this.ffmpeg.stderr.removeAllListeners();
             this.ffmpeg.stdout.removeAllListeners();
-            this.log.debug('AUDIO EXTRACTOR', 'closing ffmpeg');
         });
     }
 
@@ -40,10 +40,6 @@ export class AudioExtractor{
 
     close(){
         this.log.info('AUDIO EXTRACTOR', 'Close - Killing ffmpeg');
-        this.ffmpeg?.kill();
-        this.ffmpeg.removeAllListeners();
-        this.ffmpeg.stdin.removeAllListeners();
-        this.ffmpeg.stderr.removeAllListeners();
-        this.ffmpeg.stdout.removeAllListeners();
+        this.ffmpeg?.kill('SIGKILL');
     }
 }

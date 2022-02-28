@@ -383,8 +383,8 @@ export class BrowserCam {
         }
     }
 
-    close(id){
+    async close(id){
         this.log.info('Close', id);
-        this.devices[id]?.close();
+        await this.devices[id]?.close();
     }
 }

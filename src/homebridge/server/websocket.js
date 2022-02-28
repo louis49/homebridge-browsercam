@@ -3,9 +3,10 @@ import EventEmitter from "events";
 
 const timeout = 30000;
 export class Websocket extends EventEmitter{
-    constructor(server) {
+    constructor(server, log) {
         super();
         this.server = server;
+        this.log = log;
 
         this.websocketServer = new WebSocket.WebSocketServer({
             noServer: true,
@@ -33,7 +34,7 @@ export class Websocket extends EventEmitter{
                         //console.log("Send ping")
                         websocketConnection.send(JSON.stringify({ping:true, id}));
                         websocketConnection.pingTimeout = setTimeout( () => {
-                            console.log("WS Not receiving pong from", id);
+                            this.log.info("WS Not receiving pong from", id);
                             websocketConnection.close();
                         }, timeout * 1.5);
                     }
@@ -56,7 +57,7 @@ export class Websocket extends EventEmitter{
                 });
 
                 websocketConnection.on('close', () => {
-                    console.log('WS Connexion closed from', id);
+                    this.log.info('WS Connexion closed from', id);
                     websocketConnection.removeAllListeners();
                     this.emit('close', id);
                 });

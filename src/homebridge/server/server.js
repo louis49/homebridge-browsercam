@@ -65,7 +65,7 @@ export class AdminServer extends EventEmitter {
                 reject(e);
             });
 
-            this.websocket = new Websocket(this.server);
+            this.websocket = new Websocket(this.server, this.log);
             this.websocket.on('open', (id, ws) => this.emit('open', id, ws));
             this.websocket.on('close', (id) => this.emit('close', id));
         });
