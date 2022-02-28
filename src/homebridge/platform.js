@@ -5,7 +5,7 @@ export const PLUGIN_NAME = 'homebridge-browsercam';
 
 const config_path = "browsercam";
 import {AdminServer} from "./server/server.js";
-import {Rtsp} from "./server/rtsp.js";
+//import {Rtsp} from "./server/rtsp.js";
 import path from "path";
 
 
@@ -21,8 +21,8 @@ export class BrowserCam {
         this.api.on("didFinishLaunching" , async () => {
             this.log.info("didFinishLaunching");
 
-            let rtsp = new Rtsp(6554, 5554);
-            await rtsp.start();
+            //let rtsp = new Rtsp(6554, 5554);
+            //await rtsp.start();
 
             let server = new AdminServer(this.log,  path.join(this.api.user.storagePath(), config_path), this.config.port);
             server.on('open', this.open.bind(this));
