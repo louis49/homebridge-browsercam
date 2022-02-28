@@ -1,4 +1,5 @@
 import {spawn} from "child_process";
+import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
 
 export class AudioExtractor{
     constructor(wav_decoder, log) {
@@ -6,7 +7,7 @@ export class AudioExtractor{
         this.log = log;
 
         const args = `-i pipe: -vn -acodec pcm_s16le -ac 1 -f wav -blocksize 128 pipe: -hide_banner`;
-        this.ffmpeg = spawn("ffmpeg", args.split(/\s+/), { env: process.env });
+        this.ffmpeg = spawn(ffmpeg_for_homebridge??"ffmpeg", args.split(/\s+/), { env: process.env });
 
         this.ffmpeg.stdin.on('error',  (e) => {});
 
