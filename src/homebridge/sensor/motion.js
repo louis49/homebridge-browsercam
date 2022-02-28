@@ -29,11 +29,11 @@ export class MotionDetector extends EventEmitter{
         });
 
         this.worker.stderr.on('data', (data) => {
-            this.log.debug(data.toString());
+            this.log.debug('MOTION', data.toString());
         });
 
         this.worker.stdout.on('data', (data) => {
-            this.log.debug(data.toString());
+            this.log.debug('MOTION', data.toString());
         });
 
         this.worker.on('close',() => {

@@ -16,11 +16,11 @@ export class AudioExtractor{
         });
 
         this.ffmpeg.stderr.on('data', (data) => {
-            this.log.debug('Audio extract', data.toString());
+            this.log.debug('AUDIO EXTRACTOR', data.toString());
         });
 
         this.ffmpeg.on('error', (error) => {
-            this.log.error(error);
+            this.log.error('AUDIO EXTRACTOR', error);
         });
 
         this.ffmpeg.on('close', () => {
@@ -28,7 +28,7 @@ export class AudioExtractor{
             this.ffmpeg.stdin.removeAllListeners();
             this.ffmpeg.stderr.removeAllListeners();
             this.ffmpeg.stdout.removeAllListeners();
-            this.log.debug("Audio extract : Fmmpeg closed");
+            this.log.debug('AUDIO EXTRACTOR', 'closing ffmpeg');
         });
     }
 
@@ -36,5 +36,14 @@ export class AudioExtractor{
         if(this.ffmpeg.stdin.writable){
             this.ffmpeg.stdin.write(buffer);
         }
+    }
+
+    close(){
+        this.log.info('AUDIO EXTRACTOR', 'Close - Killing ffmpeg');
+        this.ffmpeg?.kill();
+        this.ffmpeg.removeAllListeners();
+        this.ffmpeg.stdin.removeAllListeners();
+        this.ffmpeg.stderr.removeAllListeners();
+        this.ffmpeg.stdout.removeAllListeners();
     }
 }
