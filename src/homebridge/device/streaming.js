@@ -80,7 +80,7 @@ export class Streaming{
         });
 
         this.ffmpeg_stream.stderr.on('data', function (data){
-            this.log.debug(data.toString());
+            this.log.info(data.toString());
         }.bind(this));
 
         this.ffmpeg_stream.on('error', (error) => {
