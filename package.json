@@ -33,7 +33,6 @@
     "fifo-buffer": "^1.0.0",
     "node-forge": "^1.2.1",
     "pick-port": "^1.0.0",
-    "rtsp-streaming-server": "github:chriswiggins/rtsp-streaming-server#19b792884ec16464becb486424278734a583f207",
     "ws": "^8.4.2"
   },
   "devDependencies": {
