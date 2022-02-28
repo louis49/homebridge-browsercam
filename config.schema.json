@@ -11,6 +11,17 @@
       "description" : "Port where your browser camera need to connect",
       "required": true
     },
+    "h264": {
+      "title": "H264 codec",
+      "description" : "Video codec used with ffmpeg",
+      "type": "string",
+      "default": "libx264",
+      "oneOf": [
+        { "title": "H264", "enum": ["libx264"] },
+        { "title": "H264 OMX (Raspberry Pi hardware encoding)", "enum": ["h264_omx"] }
+      ],
+      "required": true
+    },
     "streaming": {
       "type": "object",
       "properties": {

@@ -3,10 +3,11 @@ import {spawn} from "child_process";
 import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
 
 export class Streaming{
-    constructor(api, log, sessionInfo, request, callback) {
+    constructor(api, log, config, sessionInfo, request, callback) {
 
         this.api = api;
         this.log = log;
+        this.config = config;
         this.running = true;
         this.callback = callback;
 
@@ -42,7 +43,7 @@ export class Streaming{
         let v_ssrc = sessionInfo.videoSSRC;
         let mtu = request.video.mtu; // 1316
 
-        let vcodec = 'libx264';
+        let vcodec = this.config.h264??'libx264';
         let encoderOptions = '-preset ultrafast -tune zerolatency';
         let fps = request.video.fps;
         let videoBitrate = request.video.max_bit_rate;
