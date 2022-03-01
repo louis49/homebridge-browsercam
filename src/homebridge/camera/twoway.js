@@ -110,7 +110,7 @@ export class TwoWay extends EventEmitter{
 
     close(){
         this.log.info('TWOWAY', 'Close - Killing ffmpeg');
-        this.ffmpeg?.kill();
+        this.ffmpeg?.kill('SIGKILL');
         this.wav_decoder.removeAllListeners();
         this.removeAllListeners();
     }
