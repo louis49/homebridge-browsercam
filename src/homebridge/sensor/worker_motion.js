@@ -10,6 +10,7 @@ class WorkerMotionDetector{
         this.input_height = workerData.height;
         this.input_width = workerData.width;
         this.threshold = workerData.threshold;
+        this.fps = workerData.fps;
         this.id = workerData.id;
 
         this.output_height = 240;
@@ -56,7 +57,7 @@ class WorkerMotionDetector{
 
         let resizeFilter = `scale=${this.output_width}:${this.output_height}`;
 
-        const ffmpegArgs_framer = `-i pipe: -pix_fmt bgr24 -vf ${resizeFilter} -f rawvideo pipe: -hide_banner`;
+        const ffmpegArgs_framer = `-i pipe: -pix_fmt bgr24 -vf ${resizeFilter} -r ${this.fps} -f rawvideo pipe: -hide_banner`;
         this.ffmpeg_framer = spawn(ffmpeg_for_homebridge??"ffmpeg", ffmpegArgs_framer.split(/\s+/), { env: process.env });
 
         this.ffmpeg_framer.stdin.on('error',  (e) => {
@@ -64,12 +65,13 @@ class WorkerMotionDetector{
         });
 
         this.ffmpeg_framer.stderr.on('data', (data) => {
-            //console.log('WORKER MOTION', data.toString())
+            if(this.start === undefined){
+                this.start = new Date();
+                this.count = 0;
+            }
+            //console.log('WORKER MOTION', data.toString());
         });
 
-        this.ffmpeg_framer.stdout.on('data', (data) => {
-            //console.log(data.toString())
-        });
         this.ffmpeg_framer.on('close', async () => {
             this.ffmpeg_framer.removeAllListeners();
             this.ffmpeg_framer.stdin.removeAllListeners();
@@ -128,12 +130,12 @@ class WorkerMotionDetector{
 
                 let contours = new this.cv.MatVector();
                 let hierarchy = new this.cv.Mat();
-                this.cv.findContours(this.grey_image, contours, hierarchy, this.cv.RETR_EXTERNAL, this.cv.CHAIN_APPROX_TC89_L1);
+                this.cv.findContours(this.grey_image, contours, hierarchy, this.cv.RETR_EXTERNAL, this.cv.CHAIN_APPROX_SIMPLE);
 
-                let color = new this.cv.Scalar(0, 0, 255, 255);
                 for (let i = 0; i < contours.size(); ++i) {
                     this.cursurface += this.cv.contourArea(contours.get(i), false);
                     if(this.demo) {
+                        let color = new this.cv.Scalar(0, 0, 255, 255);
                         this.cv.drawContours(this.initial_image, contours, i, color, 3, this.cv.LINE_AA, hierarchy, 100);
                     }
                 }
@@ -155,6 +157,11 @@ class WorkerMotionDetector{
                 this.initial_image.delete();
                 this.color_image.delete();
                 this.cursurface = 0;
+                this.count++;
+                let diff = (new Date() - this.start)/1000;
+                if(this.count%(this.fps*10)===0){
+                    parentPort.postMessage({ fps: (this.count/diff).toFixed(0)});
+                }
             }
             catch (e) {
                 console.log('Error motion worker');

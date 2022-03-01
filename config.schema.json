@@ -82,6 +82,15 @@
           "minimum": 0,
           "maximum": 100,
           "required": true
+        },
+        "fps": {
+          "type": "integer",
+          "default": 10,
+          "placeholder": "",
+          "description" : "Frame per seconds analyzed - you will be warned if this value is too high",
+          "minimum": 5,
+          "maximum": 50,
+          "required": true
         }
       }
     },
