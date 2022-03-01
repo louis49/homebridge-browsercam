@@ -247,4 +247,22 @@ export class Device extends EventEmitter{
     send_client(buffer){
         this.ws.send(buffer, {binary:true});
     }
+
+    start_twowayaudio(audio_port, video_port, ipv6, target_address, audio_key, codec, sample_rate){
+        this.log.info('Starting Two Way Audio Server');
+        this.twoway = new TwoWay(this.log, audio_port, ipv6, target_address, audio_key, codec, sample_rate);
+        this.twoway.on('twoway', this.send_client.bind(this));
+        this.twoway.start();
+
+    }
+
+    stop_twowayaudio(){
+        if(this.twoway){
+            this.twoway.close();
+        }
+    }
+
+    send_client(buffer){
+        this.ws.send(buffer, {binary:true});
+    }
 }
