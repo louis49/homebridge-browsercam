@@ -1,18 +1,26 @@
 import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
 import {spawn} from "child_process";
+import EventEmitter from "events";
+import {WavDecoder} from "./wavdecoder.js";
 
-export class TwoWay{
-    constructor(audio_port, ipv6, target_address, audio_key, codec, sample_rate, pt) {
+export class TwoWay extends EventEmitter{
+    constructor(log, audio_port, ipv6, target_address, audio_key, codec, sample_rate) {
+        super();
         this.audio_port = audio_port;
         this.ipv6 = ipv6;
-        this.pt = pt;
         this.codec = codec;
         this.sample_rate = sample_rate;
         this.audio_key = audio_key;
         this.target_address = target_address;
+        this.log = log;
+        this.wav_decoder = new WavDecoder(this.log);
     }
 
     start(){
+        this.wav_decoder.on('audio_frame', (frame) => {
+            this.emit('twoway', frame);
+        });
+
         let csd = 'F8F0212C00BC00';
 
         let fi = 0;
@@ -63,10 +71,10 @@ export class TwoWay{
             "-acodec", this.codec === 'OPUS' ? "libopus" : "libfdk_aac",
             "-f", "sdp",
             "-i", "pipe:",
-            "-f", this.codec === 'OPUS' ? "opus":'aac',
-            "-acodec", "copy",
+            "-f", "wav",
+            "-acodec", "pcm_s16le",
+            "-blocksize", "10000",
             '-ac', '1',
-            //"-loglevel", "56",
             "pipe:"
         );
 
@@ -77,6 +85,7 @@ export class TwoWay{
         this.ffmpeg.stdin.on('error',  (e) => {});
 
         this.ffmpeg.stdout.on('data', (data) => {
+            this.wav_decoder.append(data);
             //console.log("TwoWay stdout data :", data.length);
         });
 
@@ -89,9 +98,18 @@ export class TwoWay{
         });
 
         this.ffmpeg.on('close', () => {
-            console.log("TwoWay : Fmmpeg closed");
+            this.ffmpeg.removeAllListeners();
+            this.ffmpeg.stdin.removeAllListeners();
+            this.ffmpeg.stderr.removeAllListeners();
+            this.ffmpeg.stdout.removeAllListeners();
+            this.log.debug('TWOWAY', 'closing ffmpeg');
         });
 
         this.ffmpeg.stdin.end(Buffer.from(sdp));
+    }
+
+    close(){
+        this.wav_decoder.removeAllListeners();
+        this.removeAllListeners();
     }
 }
