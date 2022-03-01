@@ -45,7 +45,7 @@ class WorkerMotionDetector{
     }
 
     async init(){
-        this.cv = await cv;
+        this.cv = await cv();
 
         this.frame = new this.cv.Mat(this.output_height, this.output_width, this.cv.CV_8UC3);
         this.color_image = new this.cv.Mat(this.output_height, this.output_width, this.cv.CV_8UC3);
