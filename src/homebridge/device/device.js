@@ -120,7 +120,7 @@ export class Device extends EventEmitter{
 
         if(this.config.motion_detector.active) {
             this.log.info('MOTION DETECTOR START');
-            this.motion_detector = new MotionDetector(this.log, this.settings.height, this.settings.width, this.config.motion_detector.threshold, this.id);
+            this.motion_detector = new MotionDetector(this.log, this.settings.height, this.settings.width, this.config.motion_detector.threshold,this.config.motion_detector.fps, this.id);
             this.motion_detector.on('motion', ()=>this.emit('motion'));
         }
 

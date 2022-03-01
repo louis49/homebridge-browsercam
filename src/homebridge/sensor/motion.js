@@ -6,17 +6,18 @@ import {fileURLToPath} from "url";
 const directory = dirname(fileURLToPath(import.meta.url));
 
 export class MotionDetector extends EventEmitter{
-    constructor(log, height, width, threshold, id) {
+    constructor(log, height, width, threshold, fps, id) {
         super();
         this.log = log;
         this.height = height;
         this.width = width;
         this.threshold = threshold;
+        this.fps = fps;
         this.id = id;
         this.demo = false;
 
         let worker_path = path.join(directory, "worker_motion.js");
-        this.worker = new Worker(worker_path, {workerData:{height : this.height, width : this.width, demo:this.demo, threshold:this.threshold, id:this.id}, stdin: true});
+        this.worker = new Worker(worker_path, {workerData:{height : this.height, width : this.width, demo:this.demo, threshold:this.threshold, fps:this.fps, id:this.id}, stdin: true});
 
         this.worker.stdin.on('error',  (e) => {});
 
@@ -25,6 +26,14 @@ export class MotionDetector extends EventEmitter{
             if(message.moving){
                 this.log.info('Motion detected :', `${message.value.toFixed(2)}/${this.threshold}`);
                 this.emit('motion');
+            }
+            else if(message.fps){
+                if(message.fps < this.fps){
+                    this.log.warn('You CPU is too slow, please reduce FPS setting to', message.fps, 'in you config');
+                }
+                else{
+                    this.log.info('FPS is Ok', message.fps, '/', this.fps);
+                }
             }
         });
 
