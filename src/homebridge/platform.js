@@ -12,7 +12,37 @@ import path from "path";
 export class BrowserCam {
     constructor(log, config, api) {
         this.log = log;
-        this.config = config;
+        this.config = {
+            "port": 443,
+            "h264": "libx264",
+            "streaming": {
+                "buffer": 500
+            },
+            "recording": {
+                "active": true,
+                "buffer": 4000
+            },
+            "motion_detector": {
+                "active": true,
+                "timeout": 30000,
+                "threshold": 5,
+                "fps": 10
+            },
+            "noise_detector": {
+                "active": true,
+                "record": false,
+                "threshold": 5,
+                "timeout": 30000
+            },
+            "pulse_detector": {
+                "active": true,
+                "record": false,
+                "threshold": 0.05,
+                "timeout": 30000
+            },
+            "platform": "HomebridgeBrowserCam"
+        };
+        this.config = Object.assign(this.config, config);
         this.api = api;
 
         this.devices = {};
