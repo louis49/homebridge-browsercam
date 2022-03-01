@@ -1,10 +1,12 @@
 import {Client} from "./client.js";
 import {Video} from "./video.js";
 import {Device} from "./device.js";
+import {Audio} from "./audio.js";
 
 async function start(){
 
     let video = new Video(150);
+    let audio = new Audio();
     let identifier = await video.init();
 
     if(identifier){
@@ -30,6 +32,10 @@ async function start(){
             device.on('battery_charging', (charging) => {
                 client.send_message({'battery_charging':charging, 'id':identifier});
             });
+        });
+
+        client.on('twoway', (buffer) => {
+            audio.append(buffer);
         });
 
         video.on('settings', (message) => {
