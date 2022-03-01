@@ -224,7 +224,9 @@ export class Device extends EventEmitter{
     }
 
     stop_twowayaudio(){
-        this.twoway.close();
+        if(this.twoway){
+            this.twoway.close();
+        }
     }
 
     send_client(buffer){
