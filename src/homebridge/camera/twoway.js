@@ -90,11 +90,11 @@ export class TwoWay extends EventEmitter{
         });
 
         this.ffmpeg.stderr.on('data', (data) => {
-            console.log("TwoWay stderr data :", data.toString());
+            this.log.info("TwoWay stderr data :", data.toString());
         });
 
         this.ffmpeg.on('error', (error) => {
-            console.log("TwoWay error :", error);
+            this.log.error("TwoWay error :", error);
         });
 
         this.ffmpeg.on('close', () => {
@@ -102,13 +102,15 @@ export class TwoWay extends EventEmitter{
             this.ffmpeg.stdin.removeAllListeners();
             this.ffmpeg.stderr.removeAllListeners();
             this.ffmpeg.stdout.removeAllListeners();
-            this.log.debug('TWOWAY', 'closing ffmpeg');
+            this.log.info('TWOWAY', 'closing ffmpeg');
         });
 
         this.ffmpeg.stdin.end(Buffer.from(sdp));
     }
 
     close(){
+        this.log.info('TWOWAY', 'Close - Killing ffmpeg');
+        this.ffmpeg?.kill();
         this.wav_decoder.removeAllListeners();
         this.removeAllListeners();
     }

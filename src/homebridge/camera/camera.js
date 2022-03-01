@@ -98,6 +98,7 @@ export class Camera{
             case this.api.hap.StreamRequestTypes.STOP:
                 this.log.info("STOP Stream");
                 this.device.stop_stream(request.sessionID);
+                this.device.stop_twowayaudio();
                 if (session.timeout) {
                     clearTimeout(session.timeout);
                 }
