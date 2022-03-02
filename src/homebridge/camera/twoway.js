@@ -90,7 +90,7 @@ export class TwoWay extends EventEmitter{
         });
 
         this.ffmpeg.stderr.on('data', (data) => {
-            this.log.info("TwoWay stderr data :", data.toString());
+            this.log.debug("TwoWay stderr data :", data.toString());
         });
 
         this.ffmpeg.on('error', (error) => {
