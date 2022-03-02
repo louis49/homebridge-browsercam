@@ -12,6 +12,8 @@ import {Mp4Buffer} from "../camera/mp4buffer.js";
 import {WavDecoder} from "../camera/wavdecoder.js";
 import {Noise} from "../sensor/noise.js";
 
+import {TwoWay} from "../camera/twoway.js";
+
 const prefix = 'homebridge:browsercam-';
 
 export class Device extends EventEmitter{
@@ -210,21 +212,31 @@ export class Device extends EventEmitter{
             }
         }
 
-        this.framer.close();
-        if(this.audio_extractor){
-            this.audio_extractor.close();
-        }
-        if(this.noise_sensor){
-            this.noise_sensor.removeAllListeners();
-        }
-        if(this.wav_decoder){
-            this.wav_decoder.removeAllListeners();
-        }
-        await this.motion_detector.close();
+        this.framer?.close();
+        this.audio_extractor?.close();
+        this.noise_sensor?.removeAllListeners();
+        this.wav_decoder?.removeAllListeners();
+        await this.motion_detector?.close();
     }
 
     reload(){
         this.log.info('Sending Reload');
         this.ws.send(JSON.stringify({reload : {value:true}, id:this.id}));
+    }
+
+    start_twowayaudio(audio_port, video_port, ipv6, target_address, audio_key, codec, sample_rate){
+        this.log.info('Starting Two Way Audio Server');
+        this.twoway = new TwoWay(this.log, audio_port, ipv6, target_address, audio_key, codec, sample_rate);
+        this.ws.send(JSON.stringify({twoway_init:{sample_rate:sample_rate*1000}, id:this.id}));
+        this.twoway.on('twoway', this.send_audio_buffer.bind(this));
+        this.twoway.start();
+    }
+
+    stop_twowayaudio(){
+        this.twoway?.close();
+    }
+
+    send_audio_buffer(buffer){
+        this.ws.send(buffer, {binary:true});
     }
 }

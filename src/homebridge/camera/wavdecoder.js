@@ -17,16 +17,18 @@ export class WavDecoder extends EventEmitter {
             this.cursor = this.parseHead(this.buffer);
             if(this.cursor !== 0){
                 this.head = true;
+                this.buffer = this.buffer.slice(this.cursor);
+                this.remain = this.chunk_size;
+                this.cursor = 0;
             }
-            this.buffer = this.buffer.slice(this.cursor);
-            this.remain = this.chunk_size;
-            this.cursor = 0;
         }
 
         // On démarre direct par de la data
-        this.parseBody();
-        this.buffer = this.buffer.slice(this.cursor);
-        this.cursor = 0;
+        if(this.head){
+            this.parseBody();
+            this.buffer = this.buffer.slice(this.cursor);
+            this.cursor = 0;
+        }
     }
 
     parseBody(){
@@ -46,7 +48,7 @@ export class WavDecoder extends EventEmitter {
             }
 
             let data = this.buffer.readIntLE(this.cursor, this.block_size);
-            array[this.cursor/2] = data < 0 ? data / 32768 : data / 32767;
+            array[this.cursor/this.block_size] = data < 0 ? data / 32768 : data / 32767;
             this.cursor += this.block_size;
             this.remain -= this.block_size;
         }

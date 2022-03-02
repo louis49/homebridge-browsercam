@@ -1,11 +1,13 @@
 import {Client} from "./client.js";
 import {Video} from "./video.js";
 import {Device} from "./device.js";
+import {Audio} from "./audio.js";
 
 async function start(){
 
     let video = new Video(150);
     let identifier = await video.init();
+    let audio = null;
 
     if(identifier){
 
@@ -30,6 +32,15 @@ async function start(){
             device.on('battery_charging', (charging) => {
                 client.send_message({'battery_charging':charging, 'id':identifier});
             });
+        });
+
+        client.on('twoway', (buffer) => {
+            audio.append(buffer);
+        });
+
+        client.on('twoway_init', (conf) => {
+            //console.log('twoway_init', conf);
+            audio = new Audio(conf);
         });
 
         video.on('settings', (message) => {

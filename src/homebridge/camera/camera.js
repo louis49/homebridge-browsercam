@@ -71,7 +71,8 @@ export class Camera{
             }
         };
 
-        this.device.pendingSessions[request.sessionID] = {session : sessionInfo};
+        this.device.pendingSessions[request.sessionID] = {session : sessionInfo, request};
+
         callback(undefined, response);
     }
 
@@ -82,6 +83,11 @@ export class Camera{
             case this.api.hap.StreamRequestTypes.START:
                 this.log.info('START stream : ' + request.video.width + ' x ' + request.video.height + ', ' +
                     request.video.fps + ' fps, ' + request.video.max_bit_rate + ' kbps');
+                if(session.audioReturnPort && session.videoReturnPort){
+                    let prepare_request = this.device.pendingSessions[request.sessionID].request;
+                    let audio_key = Buffer.concat([prepare_request.audio.srtp_key, prepare_request.audio.srtp_salt]);
+                    this.device.start_twowayaudio(session.audioReturnPort, session.videoReturnPort, session.ipv6, prepare_request.targetAddress, audio_key, request.audio.codec, request.audio.sample_rate);
+                }
                 this.device.stream(request.sessionID, session, request, callback);
                 break;
             case this.api.hap.StreamRequestTypes.RECONFIGURE:
@@ -92,6 +98,7 @@ export class Camera{
             case this.api.hap.StreamRequestTypes.STOP:
                 this.log.info("STOP Stream");
                 this.device.stop_stream(request.sessionID);
+                this.device.stop_twowayaudio();
                 if (session.timeout) {
                     clearTimeout(session.timeout);
                 }
