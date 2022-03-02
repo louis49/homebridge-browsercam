@@ -57,10 +57,9 @@ export class Streaming{
         let a_srtp = sessionInfo.audioSRTP.toString('base64');
         let a_ssrc = sessionInfo.audioSSRC;
         let audio_port = sessionInfo.audioPort;
-
-        // -analyzeduration 2147483647 -probesize 2147483647
-        let ffmpegArgs = `-i pipe:`;
-        ffmpegArgs +=   ` -an -sn -dn -codec:v ${vcodec} -pix_fmt yuv420p -color_range mpeg -r ${fps} -f rawvideo ${encoderOptions} -b:v ${videoBitrate}k -profile:v ${profile} -level:v ${level} -payload_type ${v_payload_type}`;
+        
+        let ffmpegArgs = `-loglevel 56 -i pipe:`;
+        ffmpegArgs +=   ` -an -sn -dn -codec:v ${vcodec} -pix_fmt yuv420p -color_range mpeg -r ${fps} -f rawvideo ${encoderOptions} -b:v ${videoBitrate}k -profile:v ${profile} -level:v ${level} -payload_type ${v_payload_type} -preset ultrafast -tune zerolatency`;
         ffmpegArgs +=   ` -ssrc ${v_ssrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${v_srtp} srtp://${address}:${video_port}?rtcpport=${video_port}&pkt_size=${mtu}`;
         ffmpegArgs +=   ` -vn -sn -dn -codec:a ${acodec} -application lowdelay -flags +global_header -f null -ar ${sample_rate}k -b:a ${max_bit_rate}k -ac ${channel} -payload_type ${a_payload_type}`;
         ffmpegArgs +=   ` -ssrc ${a_ssrc} -f rtp -srtp_out_suite AES_CM_128_HMAC_SHA1_80 -srtp_out_params ${a_srtp} srtp://${address}:${audio_port}?rtcpport=${audio_port}&pkt_size=188 -hide_banner`;
