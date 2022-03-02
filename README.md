@@ -38,6 +38,7 @@ sudo npm install -g --unsafe-perm homebridge-browsercam
 * Snapshoting
 * Streaming
 * Recording
+* Two-way audio
 * Motion Sensor
 * Noise Sensor
 * Pulse Sensor
