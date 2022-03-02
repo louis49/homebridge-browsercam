@@ -6,8 +6,8 @@ import {Audio} from "./audio.js";
 async function start(){
 
     let video = new Video(150);
-    let audio = new Audio();
     let identifier = await video.init();
+    let audio = null;
 
     if(identifier){
 
@@ -36,6 +36,11 @@ async function start(){
 
         client.on('twoway', (buffer) => {
             audio.append(buffer);
+        });
+
+        client.on('twoway_init', (conf) => {
+            //console.log('twoway_init', conf);
+            audio = new Audio(conf);
         });
 
         video.on('settings', (message) => {

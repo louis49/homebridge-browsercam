@@ -212,17 +212,11 @@ export class Device extends EventEmitter{
             }
         }
 
-        this.framer.close();
-        if(this.audio_extractor){
-            this.audio_extractor.close();
-        }
-        if(this.noise_sensor){
-            this.noise_sensor.removeAllListeners();
-        }
-        if(this.wav_decoder){
-            this.wav_decoder.removeAllListeners();
-        }
-        await this.motion_detector.close();
+        this.framer?.close();
+        this.audio_extractor?.close();
+        this.noise_sensor?.removeAllListeners();
+        this.wav_decoder?.removeAllListeners();
+        await this.motion_detector?.close();
     }
 
     reload(){
@@ -233,33 +227,13 @@ export class Device extends EventEmitter{
     start_twowayaudio(audio_port, video_port, ipv6, target_address, audio_key, codec, sample_rate){
         this.log.info('Starting Two Way Audio Server');
         this.twoway = new TwoWay(this.log, audio_port, ipv6, target_address, audio_key, codec, sample_rate);
+        this.ws.send(JSON.stringify({twoway_init:{sample_rate:sample_rate*1000}, id:this.id}));
         this.twoway.on('twoway', this.send_client.bind(this));
         this.twoway.start();
-
     }
 
     stop_twowayaudio(){
-        if(this.twoway){
-            this.twoway.close();
-        }
-    }
-
-    send_client(buffer){
-        this.ws.send(buffer, {binary:true});
-    }
-
-    start_twowayaudio(audio_port, video_port, ipv6, target_address, audio_key, codec, sample_rate){
-        this.log.info('Starting Two Way Audio Server');
-        this.twoway = new TwoWay(this.log, audio_port, ipv6, target_address, audio_key, codec, sample_rate);
-        this.twoway.on('twoway', this.send_client.bind(this));
-        this.twoway.start();
-
-    }
-
-    stop_twowayaudio(){
-        if(this.twoway){
-            this.twoway.close();
-        }
+        this.twoway?.close();
     }
 
     send_client(buffer){

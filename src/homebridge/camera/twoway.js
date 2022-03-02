@@ -73,8 +73,8 @@ export class TwoWay extends EventEmitter{
             "-i", "pipe:",
             "-f", "wav",
             "-acodec", "pcm_s16le",
-            "-blocksize", "10000",
             '-ac', '1',
+            '-ar', this.sample_rate*1000,
             "pipe:"
         );
 

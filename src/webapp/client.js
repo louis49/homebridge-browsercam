@@ -73,6 +73,9 @@ export class Client extends EventEmitter {
                         //document.getElementById("log").value += `\rReceive ${JSON.stringify(json)}`;
                         this.emit('pulse_detector', json.pulse_detector.threshold);
                     }
+                    else if(json.twoway_init){
+                        this.emit('twoway_init', json.twoway_init);
+                    }
                 }
             }.bind(this));
         }.bind(this));
