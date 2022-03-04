@@ -2,9 +2,11 @@
 //https://www.ramugedia.com/mp4-container
 
 import fs from "fs";
+import EventEmitter from "events";
 
-export class Mp4Buffer{
+export class Mp4Buffer extends EventEmitter{
     constructor(duration, log) {
+        super();
         this.log = log;
         this.duration = duration;
         this.current_duration = 0;

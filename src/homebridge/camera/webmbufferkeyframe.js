@@ -1,8 +1,9 @@
 import fs from "fs";
-import {spawn} from "child_process";
+import EventEmitter from "events";
 
-export class Webmbufferkeyframe {
+export class Webmbufferkeyframe extends EventEmitter{
     constructor(duration, log) {
+        super();
         this.log = log;
         this.duration = duration;
         this.current_duration = 0;
@@ -355,15 +356,26 @@ export class Webmbufferkeyframe {
         setTimeout(() => {
             if(this.streaming === false && writer.writable){
                 this.log.debug("WRITING END STREAMING");
-                writer.end(Buffer.from([]));
+                if(writer.writable){
+                    writer.end(Buffer.from([]));
+                }
                 return;
             }
-            let next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
+            let next;
+            try{
+                next = this.findNextBlock(this.buffer, current.next_cursor, cluster_timecode);
+            }
+            catch (e){
+                this.log.info("BAD DATA : EMIT RELOAD");
+                this.emit('reload');
+            }
 
-            if(!next && writer.writable){
+            if(!next){
                 this.log.debug("FLUX END : WRITING END STREAMING");
                 this.streaming = false;
-                writer.end(new Buffer.from([]));
+                if(writer.writable){
+                    writer.end(Buffer.from([]));
+                }
                 return;
             }
 

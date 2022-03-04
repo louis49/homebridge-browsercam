@@ -98,14 +98,18 @@ export class Device extends EventEmitter{
         switch (this.settings.mimeType){
             case 'video/webm':
                 this.streaming_buffer = new Webmbufferkeyframe(this.config.streaming.buffer, this.log);
+                this.streaming_buffer.on('reload', this.reload.bind(this));
                 if(this.config.recording.active){
                     this.recording_buffer = new Webmbufferkeyframe(this.config.recording.buffer, this.log);
+                    this.recording_buffer.on('reload', this.reload.bind(this));
                 }
                 break;
             case 'video/mp4':
                 this.streaming_buffer = new Mp4Buffer(this.config.streaming.buffer, this.log);
+                this.streaming_buffer.on('reload', this.reload.bind(this));
                 if(this.config.recording.active){
                     this.recording_buffer = new Mp4Buffer(this.config.recording.buffer, this.log);
+                    this.recording_buffer.on('reload', this.reload.bind(this));
                 }
                 break;
             default:
@@ -150,21 +154,15 @@ export class Device extends EventEmitter{
 
         this.framer.copy(buffer);
 
-        try{
-            this.streaming_buffer.append(buffer);
-            for(let sessionID of Object.keys(this.pendingSessions)){
-                if(this.pendingSessions[sessionID].buffer){
-                    this.pendingSessions[sessionID].buffer.append(buffer);
-                }
-            }
-
-            if(this.config.recording.active) {
-                this.recording_buffer.append(buffer);
+        this.streaming_buffer.append(buffer);
+        for(let sessionID of Object.keys(this.pendingSessions)){
+            if(this.pendingSessions[sessionID].buffer){
+                this.pendingSessions[sessionID].buffer.append(buffer);
             }
         }
-        catch(e){
-            this.log.error(e);
-            this.reload();
+
+        if(this.config.recording.active) {
+            this.recording_buffer.append(buffer);
         }
 
         if(this.config.motion_detector.active) {
@@ -179,6 +177,7 @@ export class Device extends EventEmitter{
     stream(sessionID, sessionInfo, request, callback) {
         this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
         this.pendingSessions[sessionID].buffer = this.streaming_buffer.clone();
+        this.pendingSessions[sessionID].buffer.on('reload', this.reload.bind(this));
         this.pendingSessions[sessionID].buffer.consume(this.pendingSessions[sessionID].streaming.ffmpeg_stream.stdin);
     }
 
@@ -189,6 +188,7 @@ export class Device extends EventEmitter{
         }
         if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].buffer){
             this.pendingSessions[sessionID].buffer.stop();
+            this.pendingSessions[sessionID].buffer.removeAllListeners();
             this.pendingSessions[sessionID].buffer = null;
         }
     }
@@ -206,9 +206,13 @@ export class Device extends EventEmitter{
         this.emit('power', false);
 
         this.recording_buffer.stop();
+        this.recording_buffer.removeAllListeners();
+        this.streaming_buffer.stop();
+        this.streaming_buffer.removeAllListeners();
         for(let sessionID of Object.keys(this.pendingSessions)){
             if(this.pendingSessions[sessionID].buffer){
                 this.pendingSessions[sessionID].buffer.stop();
+                this.pendingSessions[sessionID].buffer.removeAllListeners();
             }
         }
 
