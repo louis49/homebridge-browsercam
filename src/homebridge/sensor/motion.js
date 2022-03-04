@@ -32,7 +32,7 @@ export class MotionDetector extends EventEmitter{
                     this.log.warn('You CPU is too slow, please reduce FPS setting to', message.fps, 'in you config');
                 }
                 else{
-                    this.log.info('FPS is Ok', message.fps, '/', this.fps);
+                    //this.log.debug('FPS is Ok', message.fps, '/', this.fps);
                 }
             }
         });
