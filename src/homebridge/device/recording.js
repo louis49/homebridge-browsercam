@@ -44,12 +44,9 @@ export class Recording{
     }
 
     destroy() {
+        this.log.info('RECORDING', 'Close - Killing ffmpeg');
         this.socket?.destroy();
         this.ffmpeg_process?.kill();
-        this.ffmpeg_process?.removeAllListeners();
-        this.ffmpeg_process?.stdin.removeAllListeners();
-        this.ffmpeg_process?.stderr.removeAllListeners();
-        this.ffmpeg_process?.stdout.removeAllListeners();
 
         this.socket = undefined;
         this.ffmpeg_process = undefined;
@@ -90,6 +87,10 @@ export class Recording{
 
         this.ffmpeg_process.on('close', () => {
             this.log.debug("RECORDING : Fmmpeg closed");
+            this.ffmpeg_process?.removeAllListeners();
+            this.ffmpeg_process?.stdin.removeAllListeners();
+            this.ffmpeg_process?.stderr.removeAllListeners();
+            this.ffmpeg_process?.stdout.removeAllListeners();
         });
 
         this.device.record(this.ffmpeg_process.stdin);
