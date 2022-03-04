@@ -426,7 +426,7 @@ export class Webmbufferkeyframe {
     }
 
     findNextBlock(buffer, cursor, time_code_cluster){
-        while (cursor < buffer.length - 8){
+        while (cursor < buffer.length - 11){
 
             if(
                 (buffer[cursor] === 0x1f) &&
@@ -473,7 +473,7 @@ export class Webmbufferkeyframe {
         let cluster_time_code = 0;
         let current_timecode = 0;
         let count = 0;
-        while (cursor < buffer.length - 8){
+        while (cursor < buffer.length - 11){
             // Cluster
             if(
                 (buffer[cursor] === 0x1f) &&
