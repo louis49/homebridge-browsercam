@@ -25,7 +25,7 @@ export class Framer extends EventEmitter {
             }
         });
         this.ffmpeg.on('error', (error) => {
-            this.log.debug('FRAMER', error);
+            this.log.error('FRAMER', error);
         });
 
         this.ffmpeg.stderr.on('data', (data) => {
