@@ -354,7 +354,7 @@ export class Webmbufferkeyframe extends EventEmitter{
 
     tick(writer, current, cluster_keyframe_start, cluster_timecode, time_out){
         setTimeout(() => {
-            if(this.streaming === false && writer.writable){
+            if(this.streaming === false){
                 this.log.debug("WRITING END STREAMING");
                 if(writer.writable){
                     writer.end(Buffer.from([]));
