@@ -62,8 +62,6 @@ export class TwoWay extends EventEmitter{
             "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:" + this.audio_key.toString("base64")
         ].join("\n");
 
-        console.log(sdp);
-
         let args = [];
 
         args.push(
@@ -77,9 +75,7 @@ export class TwoWay extends EventEmitter{
             '-ar', this.sample_rate*1000,
             "pipe:"
         );
-
-        console.log(args.join(" "));
-
+        
         this.ffmpeg = spawn(ffmpeg_for_homebridge??"ffmpeg", args, { env: process.env });
 
         this.ffmpeg.stdin.on('error',  (e) => {});
