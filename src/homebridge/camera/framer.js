@@ -11,17 +11,14 @@ export class Framer extends EventEmitter {
         this.height = height;
         this.width = width;
 
-        const args = `-i pipe: -f rawvideo -pix_fmt bgr24 pipe: -hide_banner`;
+        const args = `-i pipe: -f rawvideo -pix_fmt bgr24 -r 1 pipe: -hide_banner`;
         this.ffmpeg = spawn(ffmpeg_for_homebridge??"ffmpeg", args.split(/\s+/), { env: process.env });
 
         this.ffmpeg.stdin.on('error',  (e) => {});
 
         let buffer = new Fifo(this.height*this.width*3*2);
         this.ffmpeg.stdout.on('data', (data) => {
-            let k = buffer.enq(data);
-            if(k === false){
-                this.log.error("Error : Not enqueued");
-            }
+            buffer.enq(data);
             if(buffer.size >= this.height*this.width*3){
                 let frame = buffer.deq(this.height*this.width*3);
                 this.emit('frame', frame);
