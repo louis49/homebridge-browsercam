@@ -71,20 +71,20 @@ export class Camera{
             }
         };
 
-        this.device.pendingSessions[request.sessionID] = {session : sessionInfo, request};
+        this.device.streaming_sessions[request.sessionID] = {session : sessionInfo, request};
 
         callback(undefined, response);
     }
 
     handleStreamRequest(request, callback){
         this.log.info("handleStreamRequest");
-        let session = this.device.pendingSessions[request.sessionID].session;
+        let session = this.device.streaming_sessions[request.sessionID].session;
         switch (request.type) {
             case this.api.hap.StreamRequestTypes.START:
                 this.log.info('START stream : ' + request.video.width + ' x ' + request.video.height + ', ' +
                     request.video.fps + ' fps, ' + request.video.max_bit_rate + ' kbps');
                 if(session.audioReturnPort && session.videoReturnPort){
-                    let prepare_request = this.device.pendingSessions[request.sessionID].request;
+                    let prepare_request = this.device.streaming_sessions[request.sessionID].request;
                     let audio_key = Buffer.concat([prepare_request.audio.srtp_key, prepare_request.audio.srtp_salt]);
                     this.device.start_twowayaudio(session.audioReturnPort, session.videoReturnPort, session.ipv6, prepare_request.targetAddress, audio_key, request.audio.codec, request.audio.sample_rate);
                 }
@@ -102,7 +102,7 @@ export class Camera{
                 if (session.timeout) {
                     clearTimeout(session.timeout);
                 }
-                delete this.device.pendingSessions[request.sessionID];
+                delete this.device.streaming_sessions[request.sessionID];
                 callback();
                 break;
         }
@@ -205,7 +205,7 @@ export class Camera{
             "-ac", `${this.configuration.audioCodec.audioChannels}`,
         ];
 
-        this.server = new Recording(this.log, input, audio, video, this.device);
+        this.server = new Recording(this.log, input, audio, video, this.device, streamId);
 
         await this.server.start();
         if (!this.server || this.server.destroyed) {
@@ -223,7 +223,7 @@ export class Camera{
                     pending.splice(0, pending.length);
 
 
-                    const isLast = !this.device.recording_buffer.streaming;
+                    const isLast = !this.device.recording_sessions[streamId].buffer.streaming;
 
                     if(isLast){
                         this.log.debug("isLast");
@@ -255,7 +255,7 @@ export class Camera{
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#closeRecordingStream
     closeRecordingStream(streamId, reason){
         this.log.info('closeRecordingStream', streamId, this.api.hap.HDSProtocolSpecificErrorReason[reason]);
-        this.device.stop_record();
+        this.device.stop_record(streamId);
         if (this.server) {
             this.server.destroy();
             this.server = undefined;

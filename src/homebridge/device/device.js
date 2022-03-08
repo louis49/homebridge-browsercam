@@ -35,7 +35,8 @@ export class Device extends EventEmitter{
             catch (e){}
         }
 
-        this.pendingSessions = {};
+        this.streaming_sessions = {};
+        this.recording_sessions = {};
 
         this.random = false;
 
@@ -52,8 +53,12 @@ export class Device extends EventEmitter{
     configure(ws){
         this.log.info('CONFIGURE');
 
-        for(let sessionID of Object.keys(this.pendingSessions)){
+        for(let sessionID of Object.keys(this.streaming_sessions)){
             this.stop_stream(sessionID);
+        }
+
+        for(let streamID of Object.keys(this.recording_sessions)){
+            this.stop_record(streamID);
         }
 
         this.ws = ws;
@@ -155,13 +160,18 @@ export class Device extends EventEmitter{
         this.framer.copy(buffer);
 
         this.streaming_buffer.append(buffer);
-        for(let sessionID of Object.keys(this.pendingSessions)){
-            if(this.pendingSessions[sessionID].buffer){
-                this.pendingSessions[sessionID].buffer.append(buffer);
+        for(let sessionID of Object.keys(this.streaming_sessions)){
+            if(this.streaming_sessions[sessionID].buffer){
+                this.streaming_sessions[sessionID].buffer.append(buffer);
             }
         }
 
         if(this.config.recording.active) {
+            for(let streamID of Object.keys(this.recording_sessions)){
+                if(this.recording_sessions[streamID].buffer){
+                    this.recording_sessions[streamID].buffer.append(buffer);
+                }
+            }
             this.recording_buffer.append(buffer);
         }
 
@@ -175,30 +185,37 @@ export class Device extends EventEmitter{
     }
 
     stream(sessionID, sessionInfo, request, callback) {
-        this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
-        this.pendingSessions[sessionID].buffer = this.streaming_buffer.clone();
-        this.pendingSessions[sessionID].buffer.on('reload', this.reload.bind(this));
-        this.pendingSessions[sessionID].buffer.consume(this.pendingSessions[sessionID].streaming.ffmpeg_stream.stdin);
+        this.streaming_sessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
+        this.streaming_sessions[sessionID].buffer = this.streaming_buffer.clone();
+        this.streaming_sessions[sessionID].buffer.on('reload', this.reload.bind(this));
+        this.streaming_sessions[sessionID].buffer.consume(this.streaming_sessions[sessionID].streaming.ffmpeg_stream.stdin);
     }
 
     stop_stream(sessionID){
-        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].streaming) {
-            this.pendingSessions[sessionID].streaming.stop();
-            this.pendingSessions[sessionID].streaming = null;
+        if(this.streaming_sessions[sessionID] && this.streaming_sessions[sessionID].streaming) {
+            this.streaming_sessions[sessionID].streaming.stop();
+            this.streaming_sessions[sessionID].streaming = null;
         }
-        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].buffer){
-            this.pendingSessions[sessionID].buffer.stop();
-            this.pendingSessions[sessionID].buffer.removeAllListeners();
-            this.pendingSessions[sessionID].buffer = null;
+        if(this.streaming_sessions[sessionID] && this.streaming_sessions[sessionID].buffer){
+            this.streaming_sessions[sessionID].buffer.stop();
+            this.streaming_sessions[sessionID].buffer.removeAllListeners();
+            this.streaming_sessions[sessionID].buffer = null;
         }
     }
 
-    record(stdin){
-        this.recording_buffer.consume(stdin);
+    record(streamID, stdin){
+        this.recording_sessions[streamID] = {};
+        this.recording_sessions[streamID].buffer = this.recording_buffer.clone();
+        this.recording_sessions[streamID].buffer.on('reload', this.reload.bind(this));
+        this.recording_sessions[streamID].buffer.consume(stdin);
     }
 
-    stop_record(){
-        this.recording_buffer.stop();
+    stop_record(streamID){
+        if(this.recording_sessions[streamID] && this.recording_sessions[streamID].buffer){
+            this.recording_sessions[streamID].buffer.stop();
+            this.recording_sessions[streamID].buffer.removeAllListeners();
+            this.recording_sessions[streamID].buffer = null;
+        }
     }
 
     async close(){
@@ -209,10 +226,10 @@ export class Device extends EventEmitter{
         this.recording_buffer.removeAllListeners();
         this.streaming_buffer.stop();
         this.streaming_buffer.removeAllListeners();
-        for(let sessionID of Object.keys(this.pendingSessions)){
-            if(this.pendingSessions[sessionID].buffer){
-                this.pendingSessions[sessionID].buffer.stop();
-                this.pendingSessions[sessionID].buffer.removeAllListeners();
+        for(let sessionID of Object.keys(this.streaming_sessions)){
+            if(this.streaming_sessions[sessionID].buffer){
+                this.streaming_sessions[sessionID].buffer.stop();
+                this.streaming_sessions[sessionID].buffer.removeAllListeners();
             }
         }
 
