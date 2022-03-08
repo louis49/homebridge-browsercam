@@ -36,6 +36,7 @@ export class Device extends EventEmitter{
         }
 
         this.streaming_sessions = {};
+        this.recording_sessions = {};
 
         this.random = false;
 
@@ -54,6 +55,10 @@ export class Device extends EventEmitter{
 
         for(let sessionID of Object.keys(this.streaming_sessions)){
             this.stop_stream(sessionID);
+        }
+
+        for(let streamID of Object.keys(this.recording_sessions)){
+            this.stop_record(streamID);
         }
 
         this.ws = ws;
@@ -162,6 +167,11 @@ export class Device extends EventEmitter{
         }
 
         if(this.config.recording.active) {
+            for(let streamID of Object.keys(this.recording_sessions)){
+                if(this.recording_sessions[streamID].buffer){
+                    this.recording_sessions[streamID].buffer.append(buffer);
+                }
+            }
             this.recording_buffer.append(buffer);
         }
 
@@ -193,12 +203,19 @@ export class Device extends EventEmitter{
         }
     }
 
-    record(stdin){
-        this.recording_buffer.consume(stdin);
+    record(streamID, stdin){
+        this.recording_sessions[streamID] = {};
+        this.recording_sessions[streamID].buffer = this.recording_buffer.clone();
+        this.recording_sessions[streamID].buffer.on('reload', this.reload.bind(this));
+        this.recording_sessions[streamID].buffer.consume(stdin);
     }
 
-    stop_record(){
-        this.recording_buffer.stop();
+    stop_record(streamID){
+        if(this.recording_sessions[streamID] && this.recording_sessions[streamID].buffer){
+            this.recording_sessions[streamID].buffer.stop();
+            this.recording_sessions[streamID].buffer.removeAllListeners();
+            this.recording_sessions[streamID].buffer = null;
+        }
     }
 
     async close(){

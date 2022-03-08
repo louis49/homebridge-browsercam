@@ -5,9 +5,10 @@ import {spawn} from "child_process";
 import ffmpeg_for_homebridge from "ffmpeg-for-homebridge";
 
 export class Recording{
-    constructor(log, input, audio, video, device) {
+    constructor(log, input, audio, video, device, streamID) {
         this.log = log;
         this.device = device;
+        this.streamID = streamID;
         this.connectPromise = new Promise(resolve => this.connectResolve = resolve);
         this.server = createServer(this.handleConnection.bind(this));
 
@@ -93,7 +94,7 @@ export class Recording{
             this.ffmpeg_process?.stdout.removeAllListeners();
         });
 
-        this.device.record(this.ffmpeg_process.stdin);
+        this.device.record(this.streamID, this.ffmpeg_process.stdin);
     }
 
     async* generator(){

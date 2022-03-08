@@ -205,7 +205,7 @@ export class Camera{
             "-ac", `${this.configuration.audioCodec.audioChannels}`,
         ];
 
-        this.server = new Recording(this.log, input, audio, video, this.device);
+        this.server = new Recording(this.log, input, audio, video, this.device, streamId);
 
         await this.server.start();
         if (!this.server || this.server.destroyed) {
@@ -223,7 +223,7 @@ export class Camera{
                     pending.splice(0, pending.length);
 
 
-                    const isLast = !this.device.recording_buffer.streaming;
+                    const isLast = !this.device.recording_sessions[streamId].buffer.streaming;
 
                     if(isLast){
                         this.log.debug("isLast");
@@ -255,7 +255,7 @@ export class Camera{
     // https://developers.homebridge.io/HAP-NodeJS/interfaces/CameraRecordingDelegate.html#closeRecordingStream
     closeRecordingStream(streamId, reason){
         this.log.info('closeRecordingStream', streamId, this.api.hap.HDSProtocolSpecificErrorReason[reason]);
-        this.device.stop_record();
+        this.device.stop_record(streamId);
         if (this.server) {
             this.server.destroy();
             this.server = undefined;
