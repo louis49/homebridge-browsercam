@@ -35,7 +35,7 @@ export class Device extends EventEmitter{
             catch (e){}
         }
 
-        this.pendingSessions = {};
+        this.streaming_sessions = {};
 
         this.random = false;
 
@@ -52,7 +52,7 @@ export class Device extends EventEmitter{
     configure(ws){
         this.log.info('CONFIGURE');
 
-        for(let sessionID of Object.keys(this.pendingSessions)){
+        for(let sessionID of Object.keys(this.streaming_sessions)){
             this.stop_stream(sessionID);
         }
 
@@ -155,9 +155,9 @@ export class Device extends EventEmitter{
         this.framer.copy(buffer);
 
         this.streaming_buffer.append(buffer);
-        for(let sessionID of Object.keys(this.pendingSessions)){
-            if(this.pendingSessions[sessionID].buffer){
-                this.pendingSessions[sessionID].buffer.append(buffer);
+        for(let sessionID of Object.keys(this.streaming_sessions)){
+            if(this.streaming_sessions[sessionID].buffer){
+                this.streaming_sessions[sessionID].buffer.append(buffer);
             }
         }
 
@@ -175,21 +175,21 @@ export class Device extends EventEmitter{
     }
 
     stream(sessionID, sessionInfo, request, callback) {
-        this.pendingSessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
-        this.pendingSessions[sessionID].buffer = this.streaming_buffer.clone();
-        this.pendingSessions[sessionID].buffer.on('reload', this.reload.bind(this));
-        this.pendingSessions[sessionID].buffer.consume(this.pendingSessions[sessionID].streaming.ffmpeg_stream.stdin);
+        this.streaming_sessions[sessionID].streaming = new Streaming(this.api, this.log, this.config, sessionInfo, request, callback);
+        this.streaming_sessions[sessionID].buffer = this.streaming_buffer.clone();
+        this.streaming_sessions[sessionID].buffer.on('reload', this.reload.bind(this));
+        this.streaming_sessions[sessionID].buffer.consume(this.streaming_sessions[sessionID].streaming.ffmpeg_stream.stdin);
     }
 
     stop_stream(sessionID){
-        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].streaming) {
-            this.pendingSessions[sessionID].streaming.stop();
-            this.pendingSessions[sessionID].streaming = null;
+        if(this.streaming_sessions[sessionID] && this.streaming_sessions[sessionID].streaming) {
+            this.streaming_sessions[sessionID].streaming.stop();
+            this.streaming_sessions[sessionID].streaming = null;
         }
-        if(this.pendingSessions[sessionID] && this.pendingSessions[sessionID].buffer){
-            this.pendingSessions[sessionID].buffer.stop();
-            this.pendingSessions[sessionID].buffer.removeAllListeners();
-            this.pendingSessions[sessionID].buffer = null;
+        if(this.streaming_sessions[sessionID] && this.streaming_sessions[sessionID].buffer){
+            this.streaming_sessions[sessionID].buffer.stop();
+            this.streaming_sessions[sessionID].buffer.removeAllListeners();
+            this.streaming_sessions[sessionID].buffer = null;
         }
     }
 
@@ -209,10 +209,10 @@ export class Device extends EventEmitter{
         this.recording_buffer.removeAllListeners();
         this.streaming_buffer.stop();
         this.streaming_buffer.removeAllListeners();
-        for(let sessionID of Object.keys(this.pendingSessions)){
-            if(this.pendingSessions[sessionID].buffer){
-                this.pendingSessions[sessionID].buffer.stop();
-                this.pendingSessions[sessionID].buffer.removeAllListeners();
+        for(let sessionID of Object.keys(this.streaming_sessions)){
+            if(this.streaming_sessions[sessionID].buffer){
+                this.streaming_sessions[sessionID].buffer.stop();
+                this.streaming_sessions[sessionID].buffer.removeAllListeners();
             }
         }
 
